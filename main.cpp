@@ -5,6 +5,5 @@
 using namespace std;
 
 int main() {
-    Vertex v(42);
-    cout << v.getValue() << endl;   
+    cout << "Hello Stênio!!!" << endl;   
 }
