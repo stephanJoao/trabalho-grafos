@@ -58,18 +58,19 @@ void Vertex::setWeight(float weight)
  * Insert edge in vertex.
  *
  * @param target Pointer to target vertex 
- * @param weight Weight of the edge (if not received ...)
+ * @param weight Weight of the edge (defaults to 1 if not given)
  */
-void Vertex::insertEdge(Vertex* target, float weight = 1) 
+void Vertex::insertEdge(Vertex* target, float weight) 
 {
-    // checks if there is at least one edge in vertex
+    // if there is at least one edge in vertex
     if (this->first_edge != nullptr){
-        //
+        // chain the new edge after the last edge
         Edge* new_edge = new Edge(target, nullptr, weight);
-        this->first_edge = new_edge;
+        this->last_edge->setNextEdge(new_edge);
         this->last_edge = new_edge;
     } else {
-        //
-        
+        // if there is no edge, just add the new edge
+        this->first_edge = new Edge(target, nullptr, weight);
+        this->last_edge = this->first_edge;
     }
 }

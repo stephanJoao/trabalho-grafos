@@ -33,7 +33,7 @@ class Vertex
         void setWeight(float weight);
 
         // Functions
-        void insertEdge(Vertex* target, float weight);
+        void insertEdge(Vertex* target, float weight = 1);
 };
 
 #endif 

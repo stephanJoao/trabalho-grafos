@@ -17,7 +17,7 @@ class Edge
 
     public:
         // Constructors and destructors
-        Edge(Vertex* target_node, Edge* next_edge, float weight);
+        Edge(Vertex* target_node, Edge* next_edge, float weight = 1);
         ~Edge();
 
         // Getters and setters

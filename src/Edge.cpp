@@ -1,7 +1,7 @@
 #include "../include/Edge.hpp"
 
 // Constructors and destructors implementations
-Edge::Edge(Vertex* target_node, Edge* next_edge, float weight = 1)
+Edge::Edge(Vertex* target_node, Edge* next_edge, float weight)
 {
     this->target_node = target_node;
     this->next_edge = next_edge;
