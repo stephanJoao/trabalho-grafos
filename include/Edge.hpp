@@ -3,6 +3,7 @@
 
 #include "Vertex.hpp"
 
+class Vertex;
 class Edge
 {
     // Attributes
