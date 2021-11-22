@@ -9,7 +9,7 @@
 
 class Graph
 {
-    //Atributes
+    // Attributes
     private:
         int order;
         int number_edges;
@@ -19,12 +19,17 @@ class Graph
         Vertex* first_vertex;
         Vertex* last_vertex;
 
+    // Methods
+    private:
+
     public:
-        //Constructor
+        // Constructors and destructors
+
         Graph(int order, bool directed = false, bool weighted_edge = false, bool weighted_vertex = false);
-        //Destructor
         ~Graph();
-        //Getters
+
+        // Getters and setters
+
         int getOrder();
         int getNumberEdges();
         bool getDirected();
@@ -32,7 +37,9 @@ class Graph
         bool getWeightedVertex();
         Vertex* getFirstVertex();
         Vertex* getLastVertex();
+    
     //     //Other methods
+
     //     void insertVertex(int id);
     //     void insertEdge(int id, int target_id, float weight);
     //     void removeVertex(int id);
@@ -40,6 +47,7 @@ class Graph
     //     Vertex* getVertex(int id);
 
     //     //methods phase1
+
     //     void topologicalSorting();
     //     void breadthFirstSearch(std::ofstream& output_file);
     //     Graph* getVertexInduced(int* listIdVertexs);
@@ -49,6 +57,7 @@ class Graph
     //     float dijkstra(int idSource, int idTarget);
 
     //     //methods phase1
+
     //     float greed();
     //     float greedRandom();
     //     float greedRactiveRandom();

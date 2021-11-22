@@ -13,7 +13,8 @@
 #include "../include/Vertex.hpp"
 #include "../include/Edge.hpp"
 
-// Constructor
+//* Constructors and destructors implementations
+
 Graph::Graph(int order, bool directed, bool weighted_edge, bool weighted_vertex)
 {
     this->order = order;
@@ -25,7 +26,6 @@ Graph::Graph(int order, bool directed, bool weighted_edge, bool weighted_vertex)
     this->number_edges = 0;
 }
 
-// Destructor
 Graph::~Graph()
 {
     Vertex *next_vertex = this->first_vertex;
@@ -39,7 +39,8 @@ Graph::~Graph()
     }
 }
 
-// Getters
+//* Getters and setters implementations
+
 int Graph::getOrder()
 {
     return this->order;

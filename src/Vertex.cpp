@@ -59,13 +59,30 @@ Vertex* Vertex::getNextVertex()
 {
     return this->next_vertex;
 }
-        
+    
 void Vertex::setNextVertex(Vertex* vertex)
 {
     this->next_vertex = vertex;
 }
 
 //* Functions implementations
+
+/**
+ * Search edge in vertex.
+ *
+ * @param target Target vertex id
+ */
+bool Vertex::searchEdge(int target_id){
+     // If there is at least one edge in the vertex
+    if(this->first_edge != nullptr){
+        // Searching for a specific edge of target id equal to target_id
+        for(Edge* aux = this->first_edge; aux != nullptr; aux = aux->getNextEdge())
+            if(aux->getTargetId() == target_id)
+                return true;
+    }
+
+    return false;
+}
 
 /**
  * Insert edge in vertex.
@@ -89,7 +106,7 @@ void Vertex::insertEdge(int target_id, float weight)
 }
 
 /**
- * Remove all edges from vertex
+ * Remove all edges from vertex.
  */
 void Vertex::removeAllEdges()
 {
@@ -103,82 +120,72 @@ void Vertex::removeAllEdges()
             delete aux;
         }
     }
+
     this->first_edge = this->last_edge = nullptr;
 }
 
-// int Vertex::removeEdge(int id, bool directed, Vertex* target_vertex){
-//     // Check if edge exists in vertex
-//     if(this->searchEdge(id)){
-//         Edge* aux = this->first_edge;
-//         Edge* previous = nullptr;
-//         // Searching for the edge to be removed
-//         while(aux->getTargetId() != id){
-//             previous = aux;
-//             aux = aux->getNextEdge();
-//         }
-//         // Keeping the integrity of the edge list
-//         if(previous != nullptr)
-//             previous->setNextEdge(aux->getNextEdge());
-//         else
-//             this->first_edge = aux->getNextEdge();
+/**
+ * Remove edge from vertex.
+ *
+ * @param id Edge id
+ * @param directed If the graph is directed
+ * @param target_vertex Target vertex
+ */
+int Vertex::removeEdge(int id, bool directed, Vertex* target_vertex){
+    // Check if edge exists in vertex
+    if(this->searchEdge(id)){
+        Edge* aux = this->first_edge;
+        Edge* previous = nullptr;
+        // Searching for the edge to be removed
+        while(aux->getTargetId() != id){
+            previous = aux;
+            aux = aux->getNextEdge();
+        }
+        // Keeping the integrity of the edge list
+        if(previous != nullptr)
+            previous->setNextEdge(aux->getNextEdge());
+        else
+            this->first_edge = aux->getNextEdge();
 
-//         if(aux == this->last_edge)
-//             this->last_edge = previous;
+        if(aux == this->last_edge)
+            this->last_edge = previous;
 
-//         if(aux->getNextEdge() == this->last_edge)
-//             this->last_edge = aux->getNextEdge();
+        if(aux->getNextEdge() == this->last_edge)
+            this->last_edge = aux->getNextEdge();
 
-//         delete aux;
-//         // Decrement out degree if the graph is directed
-//         if(directed){
-//             this->decrementOutDegree();
-//         } else {
-//             this->decrementInDegree();
-//             target_vertex->decrementInDegree();
-//         }
+        delete aux;
+        // Decrement out degree if the graph is directed
+        if(directed){
+            this->decrementOutDegree();
+        } else {
+            this->decrementInDegree();
+            target_vertex->decrementInDegree();
+        }
 
-//         return 1;
-//     }
+        return 1;
+    }
 
-//     return 0;
-// }
+    return 0;
+}
 
-// bool Vertex::searchEdge(int target_id){
-//      // Verifies whether there are at least one edge in the vertex
-//     if(this->first_edge != nullptr){
-//         // Searching for a specific edge of target id equal to target id
-//         for(Edge* aux = this->first_edge; aux != nullptr; aux = aux->getNextEdge())
-//             if(aux->getTargetId() == target_id)
-//                 return true;
-
-//     }
-
-//     return false;
-
-// }
-
-void Vertex::incrementInDegree(){
-
+void Vertex::incrementInDegree()
+{
     this->in_degree++;
-
 }
 
-void Vertex::incrementOutDegree(){
-
+void Vertex::incrementOutDegree()
+{
     this->out_degree++;
-
 }
 
-void Vertex::decrementInDegree(){
-
+void Vertex::decrementInDegree()
+{
     this->in_degree--;
-
 }
 
-void Vertex::decrementOutDegree(){
-
+void Vertex::decrementOutDegree()
+{
     this->out_degree--;
-
 }
 
 // Edge* Vertex::hasEdgeBetween(int target_id)

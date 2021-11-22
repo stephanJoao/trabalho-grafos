@@ -1,6 +1,6 @@
 #include "../include/Edge.hpp"
 
-// Constructors and destructors implementations
+//* Constructors and destructors implementations
 
 Edge::Edge(int target_id, Edge* next_edge, float weight)
 {
@@ -17,7 +17,7 @@ Edge::~Edge()
     }
 }
 
-// Getters and setters implementations
+//* Getters and setters implementations
 
 int Edge::getTargetId()
 {
