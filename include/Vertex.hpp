@@ -21,7 +21,7 @@ class Vertex
     public:
         // Constructors and destructors
 
-        Vertex(int id);
+        Vertex(int id, float weight = 1);
         ~Vertex();
 
         // Getters and setters
@@ -36,7 +36,7 @@ class Vertex
         Vertex* getNextVertex();
         void setNextVertex(Vertex* vertex);
 
-        // Functions
+        // Other methods
 
         bool searchEdge(int target_id);
         void insertEdge(int target_id, float weight = 1);

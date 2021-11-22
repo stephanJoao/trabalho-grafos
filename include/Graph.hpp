@@ -37,14 +37,16 @@ class Graph
         bool getWeightedVertex();
         Vertex* getFirstVertex();
         Vertex* getLastVertex();
+        Vertex* getVertex(int id);
     
-    //     //Other methods
+        //Other methods
 
-    //     void insertVertex(int id);
-    //     void insertEdge(int id, int target_id, float weight);
-    //     void removeVertex(int id);
-    //     bool searchVertex(int id);
-    //     Vertex* getVertex(int id);
+        void insertVertex(int id, float weight = 1);
+        void insertEdge(int id, int target_id, float weight = 1);
+        // void removeVertex(int id);
+        bool searchVertex(int id);
+
+        void printAdjList();
 
     //     //methods phase1
 

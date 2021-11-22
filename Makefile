@@ -1,12 +1,8 @@
-all: msg program
-	@echo Rodando o programa
-	@./program
-
-msg:
-	@echo Vou tentar compilar o programa.
+all: program clear
+	@echo Compilando
 
 main.o: main.cpp include/Graph.hpp
-	@g++ -c main.cpp 
+	@g++ -c main.cpp
 
 graph.o: src/Graph.cpp include/Graph.hpp
 	@g++ -c src/Graph.cpp
@@ -18,7 +14,7 @@ edge.o: src/Edge.cpp include/Edge.hpp
 	@g++ -c src/Edge.cpp
 
 program: main.o edge.o vertex.o graph.o
-	@g++ -o program main.o Edge.o Vertex.o Graph.o
+	@g++ -o execGrupo5 main.o Edge.o Vertex.o Graph.o
 
-limpa:
-	@rm program *.o
+clear:
+	@rm *.o

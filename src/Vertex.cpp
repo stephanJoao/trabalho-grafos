@@ -2,12 +2,13 @@
 
 //* Constructors and destructors implementations
 
-Vertex::Vertex(int id)
+Vertex::Vertex(int id, float weight)
 {
     this->id = id;
     this->first_edge = nullptr;
     this->out_degree = 0;
     this->in_degree = 0;
+    this->weight = weight;
     this->next_vertex = nullptr;
 }
 
@@ -65,7 +66,7 @@ void Vertex::setNextVertex(Vertex* vertex)
     this->next_vertex = vertex;
 }
 
-//* Functions implementations
+//* Other methods implementations
 
 /**
  * Search edge in vertex.

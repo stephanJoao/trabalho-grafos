@@ -26,7 +26,7 @@ class Edge
         float getWeight();
         void setWeight(float weight);
 
-        // Functions
+        // Other methods
 };
 
 #endif 

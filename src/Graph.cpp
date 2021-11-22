@@ -51,65 +51,134 @@ int Graph::getNumberEdges()
     return this->number_edges;
 }
 
-//Function that verifies if the graph is directed
+// Function that verifies if the graph is directed
 bool Graph::getDirected()
 {
     return this->directed;
 }
 
-//Function that verifies if the graph is weighted at the edges
+// Function that verifies if the graph is weighted at the edges
 bool Graph::getWeightedEdge()
 {
     return this->weighted_edge;
 }
 
-//Function that verifies if the graph is weighted at the vertexs
+// Function that verifies if the graph is weighted at the vertexs
 bool Graph::getWeightedVertex()
 {
     return this->weighted_vertex;
 }
 
-Vertex *Graph::getFirstVertex()
+Vertex* Graph::getFirstVertex()
 {
     return this->first_vertex;
 }
 
-Vertex *Graph::getLastVertex()
+Vertex* Graph::getLastVertex()
 {
     return this->last_vertex;
 }
 
-// // Other methods
-// /*
-//     The outdegree attribute of vertexs is used as a counter for the number of edges in the graph.
-//     This allows the correct updating of the numbers of edges in the graph being directed or not.
-// */
-// void Graph::insertVertex(int id)
-// {
+Vertex* Graph::getVertex(int id)
+{
+    Vertex* v = this->first_vertex;  
+    while(v != nullptr && v->getId() != id) {
+        v = v->getNextVertex();
+    }
+    if(v == nullptr) {
+        std::cerr << "Vertex not found!" << std::endl;
+        return nullptr;
+    }
+    return v;
+}
+
+//* Other methods
+
+/*
+    The outdegree attribute of vertices is used as a counter for the number of edges in the graph.
+    This allows the correct updating of the numbers of edges in the graph being directed or not.
+ */
+
+/**
+ * Insert vertex in graph.
+ *
+ * @param id Edge id
+ * @param directed If the graph is directed
+ * @param target_vertex Target vertex
+ */
+void Graph::insertVertex(int id, float weight)
+{
+    Vertex *v = new Vertex(id, weight);
+    if (this->first_vertex == nullptr)
+        this->first_vertex = v;
+    else
+        this->last_vertex->setNextVertex(v);
     
+    this->last_vertex = v;
+}
+
+/**
+ * @brief Insert edge on the vertex edges list
+ * 
+ * @param id First vertex's ID
+ * @param target_id Second Vertex's ID
+ * @param weight Weight of the edge
+ */
+void Graph::insertEdge(int id, int target_id, float weight)
+{
+    Vertex *v = this->getVertex(id);
+    if (this->directed){
+        v->insertEdge(target_id, weight);
+    } else {
+        v->insertEdge(target_id, weight);
+        v = this->getVertex(target_id);
+        v->insertEdge(id, weight);
+    }
+}
+
+// void Graph::removeVertex(int id)
+// { 
+//     Vertex *v = this->getVertex(id);
+//     if (v != nullptr)
+//         delete v;
+//     else 
+//         return;     
 // }
 
-// void Graph::insertEdge(int id, int target_id, float weight)
-// {
-
+/**
+ * @brief Return if the vertex is in the graph
+ * 
+ * @param id Vertex's ID
+ * @return true if
+ * @return false 
+ */
+bool Graph::searchVertex(int id)
+{
+    if (this->first_vertex != nullptr)
+    {
+        for (Vertex *v = this->first_vertex; v != nullptr; v = v->getNextVertex())
+            if (v->getId() == id)
+                return true;
+    }
     
-// }
+    return false;
+}
 
-// void Graph::removeVertex(int id){ 
-    
-// }
-
-// bool Graph::searchVertex(int id)
-// {
-    
-// }
-
-// Vertex *Graph::getVertex(int id)
-// {
-
-    
-// }
-
+void Graph::printAdjList() 
+{
+    std::cout << "Imprimindo Grafo como uma lista de adjacência:\n" << std::endl;
+    Vertex* v = first_vertex;
+    while(v != nullptr) {
+        std::cout << v->getId();
+        Edge* e = v->getFirstEdge();
+        while(e != nullptr) {
+            std::cout << " -> " << e->getTargetId();
+            e = e->getNextEdge();
+        }
+        std::cout << std::endl;
+        v = v->getNextVertex();
+    }
+}
 
 // //Function that prints a set of edges belongs breadth tree
 

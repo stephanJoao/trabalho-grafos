@@ -43,3 +43,5 @@ void Edge::setWeight(float weight)
 {
     this->weight = weight;
 }
+
+//* Other methods implementations
