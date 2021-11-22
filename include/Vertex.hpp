@@ -3,7 +3,6 @@
 
 #include "Edge.hpp"
 
-class Edge;
 class Vertex
 {
     // Attributes
@@ -14,16 +13,19 @@ class Vertex
         unsigned int in_degree;
         unsigned int out_degree;
         float weight;
+        Vertex* next_vertex;
 
     // Methods
     private:
 
     public:
         // Constructors and destructors
+
         Vertex(int id);
         ~Vertex();
 
         // Getters and setters
+
         Edge* getFirstEdge();
         Edge* getLastEdge();
         int getId();
@@ -31,9 +33,21 @@ class Vertex
         int getOutDegree();
         float getWeight();
         void setWeight(float weight);
+        Vertex* getNextVertex();
+        void setNextVertex(Vertex* vertex);
 
         // Functions
-        void insertEdge(Vertex* target, float weight = 1);
+
+        bool searchEdge(int target_id);
+        void insertEdge(int target_id, float weight = 1);
+        void removeAllEdges();
+        // int removeEdge(int id, bool directed, Vertex* target_vertex);
+        void incrementOutDegree();
+        void decrementOutDegree();
+        void incrementInDegree();
+        void decrementInDegree();
+        // Edge* hasEdgeBetween(int target_id);
+        // Auxiliar methods
 };
 
 #endif 
