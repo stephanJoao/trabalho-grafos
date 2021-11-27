@@ -119,10 +119,12 @@ void Vertex::removeAllEdges()
         while(aux != nullptr){
             next = aux->getNextEdge();
             delete aux;
+            aux = next;
         }
     }
 
-    this->first_edge = this->last_edge = nullptr;
+    this->first_edge = nullptr;
+    this->last_edge = nullptr;
 }
 
 /**

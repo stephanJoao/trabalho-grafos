@@ -51,3 +51,6 @@
 
 # Support for Project snippet scope
 !.vscode/*.code-snippets
+
+# Diagrams
+diagrams

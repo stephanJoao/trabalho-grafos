@@ -137,12 +137,8 @@ void Graph::insertEdge(int id, int target_id, float weight)
 }
 
 // void Graph::removeVertex(int id)
-// { 
-//     Vertex *v = this->getVertex(id);
-//     if (v != nullptr)
-//         delete v;
-//     else 
-//         return;     
+// {
+
 // }
 
 /**

@@ -12,7 +12,6 @@ Edge::Edge(int target_id, Edge* next_edge, float weight)
 Edge::~Edge()
 {
     if (this->next_edge != nullptr){
-        delete this->next_edge;
         this->next_edge = nullptr;
     }
 }
