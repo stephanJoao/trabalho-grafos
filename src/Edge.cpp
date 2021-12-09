@@ -1,10 +1,11 @@
 #include "../include/Edge.hpp"
+#include "../include/Vertex.hpp"
 
 //* Constructors and destructors implementations
 
-Edge::Edge(int target_id, Edge* next_edge, float weight)
+Edge::Edge(Vertex* target_vertex, Edge* next_edge, float weight)
 {
-    this->target_id = target_id;
+    this->target_vertex = target_vertex;
     this->next_edge = next_edge;
     this->weight = weight;
 }
@@ -18,9 +19,9 @@ Edge::~Edge()
 
 //* Getters and setters implementations
 
-int Edge::getTargetId()
+Vertex* Edge::getTargetVertex()
 {
-    return this->target_id;
+    return this->target_vertex;
 }
 
 Edge* Edge::getNextEdge()

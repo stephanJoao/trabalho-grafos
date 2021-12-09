@@ -1,11 +1,12 @@
 #ifndef EDGE_HPP
 #define EDGE_HPP
 
+class Vertex;
 class Edge
 {
     // Attributes
     private:
-        int target_id;
+        Vertex* target_vertex;
         float weight;
         Edge* next_edge;
 
@@ -15,12 +16,12 @@ class Edge
     public:
         // Constructors and destructors
 
-        Edge(int target_id, Edge* next_edge, float weight = 1);
+        Edge(Vertex* target_vertex, Edge* next_edge, float weight = 1);
         ~Edge();
 
         // Getters and setters
 
-        int getTargetId();
+        Vertex* getTargetVertex();
         Edge* getNextEdge();
         void setNextEdge(Edge* edge);
         float getWeight();

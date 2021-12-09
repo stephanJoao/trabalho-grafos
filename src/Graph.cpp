@@ -1,7 +1,7 @@
 #include <iostream>
-// #include <fstream>
+#include <unordered_set>
+#include <queue>
 // #include <stack>
-// #include <queue>
 // #include <list>
 // #include <math.h>
 // #include <cstdlib>
@@ -127,12 +127,13 @@ void Graph::insertVertex(int id, float weight)
 void Graph::insertEdge(int id, int target_id, float weight)
 {
     Vertex *v = this->getVertex(id);
+    Vertex *target_vertex = this->getVertex(target_id);
     if (this->directed){
-        v->insertEdge(target_id, weight);
+        v->insertEdge(target_vertex, weight);
     } else {
-        v->insertEdge(target_id, weight);
-        v = this->getVertex(target_id);
-        v->insertEdge(id, weight);
+        v->insertEdge(target_vertex, weight);
+        // v = this->getVertex(target_id);
+        target_vertex->insertEdge(v, weight);
     }
 }
 
@@ -168,12 +169,58 @@ void Graph::printAdjList()
         std::cout << v->getId();
         Edge* e = v->getFirstEdge();
         while(e != nullptr) {
-            std::cout << " -> " << e->getTargetId();
+            std::cout << " -> " << e->getTargetVertex()->getId();
             e = e->getNextEdge();
         }
         std::cout << std::endl;
         v = v->getNextVertex();
     }
+}
+
+/**
+ * @brief Prints the vertices in order according to the Breadth First Search algorithm
+ * 
+ * @param id ID of the starting vertex
+ */
+void Graph::BFS(int id)
+{
+    std::cout << "Caminhamento em largura:" << std::endl;
+    Vertex* v = getVertex(id);
+    
+    if (v == nullptr) {
+        std::cerr << "Vertex not found!" << std::endl;
+        return;
+    }
+    
+    // Hash Set of visited vertices
+    std::unordered_set<Vertex*> visited;
+ 
+    // Queue of vertices to visit
+    std::queue<Vertex*> toVisit;
+ 
+    // Enqueue current vertex and add it to the visited vertices set
+    toVisit.push(v);
+    visited.insert(v);
+ 
+    while(!toVisit.empty())
+    {
+        // Dequeue top vertex in queue
+        v = toVisit.front();
+        std::cout << v->getId() << " ";
+        toVisit.pop();
+ 
+        // Check for unvisited vertices in adjacency list and enqueue them
+        for(Edge *e = v->getFirstEdge(); e != nullptr; e = e->getNextEdge())
+        {
+            Vertex* target_vertex = e->getTargetVertex();
+            if(!visited.count(target_vertex))
+            {
+                visited.insert(target_vertex);
+                toVisit.push(target_vertex);
+            }
+        }
+    }
+    std::cout << std::endl;
 }
 
 // //Function that prints a set of edges belongs breadth tree

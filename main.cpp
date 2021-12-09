@@ -17,6 +17,7 @@ int main() {
     g->insertEdge(2, 3);
 
     g->printAdjList();
+    g->BFS(1);
     delete g;
     return 0;
 }

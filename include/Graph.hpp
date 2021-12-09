@@ -47,6 +47,7 @@ class Graph
         bool searchVertex(int id);
 
         void printAdjList();
+        void BFS(int id);
 
     //     //methods phase1
 

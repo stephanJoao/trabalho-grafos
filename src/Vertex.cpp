@@ -78,7 +78,7 @@ bool Vertex::searchEdge(int target_id){
     if(this->first_edge != nullptr){
         // Searching for a specific edge of target id equal to target_id
         for(Edge* aux = this->first_edge; aux != nullptr; aux = aux->getNextEdge())
-            if(aux->getTargetId() == target_id)
+            if(aux->getTargetVertex()->getId() == target_id)
                 return true;
     }
 
@@ -91,17 +91,17 @@ bool Vertex::searchEdge(int target_id){
  * @param target Target vertex id
  * @param weight Weight of the edge (defaults to 1 if not given)
  */
-void Vertex::insertEdge(int target_id, float weight) 
+void Vertex::insertEdge(Vertex* target_vertex, float weight) 
 {
     // If there is at least one edge in vertex
     if (this->first_edge != nullptr){
         // Chain the new edge after the last edge
-        Edge* new_edge = new Edge(target_id, nullptr, weight);
+        Edge* new_edge = new Edge(target_vertex, nullptr, weight);
         this->last_edge->setNextEdge(new_edge);
         this->last_edge = new_edge;
     } else {
         // If there is no edge, just add the new edge
-        this->first_edge = new Edge(target_id, nullptr, weight);
+        this->first_edge = new Edge(target_vertex, nullptr, weight);
         this->last_edge = this->first_edge;
     }
 }
@@ -140,7 +140,7 @@ int Vertex::removeEdge(int id, bool directed, Vertex* target_vertex){
         Edge* aux = this->first_edge;
         Edge* previous = nullptr;
         // Searching for the edge to be removed
-        while(aux->getTargetId() != id){
+        while(aux->getTargetVertex()->getId() != id){
             previous = aux;
             aux = aux->getNextEdge();
         }
@@ -196,7 +196,7 @@ void Vertex::decrementOutDegree()
 
 //     for(Edge *auxEdge = this->first_edge; auxEdge != nullptr; auxEdge = auxEdge->getNextEdge())
 //     {
-//         if(auxEdge->getTargetId() == target_id)
+//         if(auxEdge->getTargetVertex()->getId() == target_id)
 //             return auxEdge;
 //     }
 //     return nullptr;

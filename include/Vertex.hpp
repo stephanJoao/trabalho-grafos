@@ -39,7 +39,7 @@ class Vertex
         // Other methods
 
         bool searchEdge(int target_id);
-        void insertEdge(int target_id, float weight = 1);
+        void insertEdge(Vertex* target_vertex, float weight = 1);
         void removeAllEdges();
         int removeEdge(int id, bool directed, Vertex* target_vertex);
         void incrementOutDegree();
