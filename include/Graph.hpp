@@ -5,6 +5,8 @@
 // #include <stack>
 // #include <list>
 
+#include <unordered_map>
+
 #include "Vertex.hpp"
 
 class Graph
@@ -16,8 +18,7 @@ class Graph
         bool directed;
         bool weighted_edge;
         bool weighted_vertex;
-        Vertex* first_vertex;
-        Vertex* last_vertex;
+        std::unordered_map<int, Vertex*> vertices;
 
     // Methods
     private:
@@ -32,17 +33,15 @@ class Graph
 
         int getOrder();
         int getNumberEdges();
-        bool getDirected();
-        bool getWeightedEdge();
-        bool getWeightedVertex();
-        Vertex* getFirstVertex();
-        Vertex* getLastVertex();
+        bool isDirected();
+        bool isWeightedEdge();
+        bool isWeightedVertex();
         Vertex* getVertex(int id);
     
         //Other methods
 
         void insertVertex(int id, float weight = 1);
-        void insertEdge(int id, int target_id, float weight = 1);
+        void insertEdge(int id, int target_id, float weight = 1, float vertex_weight = 1);
         // void removeVertex(int id);
         bool searchVertex(int id);
 

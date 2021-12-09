@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 #include <unordered_set>
 #include <queue>
 #include <fstream>
@@ -23,22 +24,13 @@ Graph::Graph(int order, bool directed, bool weighted_edge, bool weighted_vertex)
     this->directed = directed;
     this->weighted_edge = weighted_edge;
     this->weighted_vertex = weighted_vertex;
-    this->first_vertex = nullptr;
-    this->last_vertex = nullptr;
     this->number_edges = 0;
 }
 
 Graph::~Graph()
 {
-    Vertex *next_vertex = this->first_vertex;
-
-    while (next_vertex != nullptr)
-    {
-        next_vertex->removeAllEdges();
-        Vertex *aux_vertex = next_vertex->getNextVertex();
-        delete next_vertex;
-        next_vertex = aux_vertex;
-    }
+    for (std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it)
+        delete it->second;
 }
 
 //* Getters and setters implementations
@@ -54,44 +46,26 @@ int Graph::getNumberEdges()
 }
 
 // Function that verifies if the graph is directed
-bool Graph::getDirected()
+bool Graph::isDirected()
 {
     return this->directed;
 }
 
 // Function that verifies if the graph is weighted at the edges
-bool Graph::getWeightedEdge()
+bool Graph::isWeightedEdge()
 {
     return this->weighted_edge;
 }
 
 // Function that verifies if the graph is weighted at the vertexs
-bool Graph::getWeightedVertex()
+bool Graph::isWeightedVertex()
 {
     return this->weighted_vertex;
 }
 
-Vertex* Graph::getFirstVertex()
-{
-    return this->first_vertex;
-}
-
-Vertex* Graph::getLastVertex()
-{
-    return this->last_vertex;
-}
-
 Vertex* Graph::getVertex(int id)
 {
-    Vertex* v = this->first_vertex;  
-    while(v != nullptr && v->getId() != id) {
-        v = v->getNextVertex();
-    }
-    if(v == nullptr) {
-        std::cerr << "Vertex not found!" << std::endl;
-        return nullptr;
-    }
-    return v;
+    return vertices[id];
 }
 
 //* Other methods
@@ -110,13 +84,10 @@ Vertex* Graph::getVertex(int id)
  */
 void Graph::insertVertex(int id, float weight)
 {
-    Vertex *v = new Vertex(id, weight);
-    if (this->first_vertex == nullptr)
-        this->first_vertex = v;
-    else
-        this->last_vertex->setNextVertex(v);
-    
-    this->last_vertex = v;
+    if (vertices.count(id) == 0) {
+        Vertex *v = new Vertex(id, weight);
+        vertices.insert({id, v});
+    }
 }
 
 /**
@@ -126,16 +97,21 @@ void Graph::insertVertex(int id, float weight)
  * @param target_id Second Vertex's ID
  * @param weight Weight of the edge
  */
-void Graph::insertEdge(int id, int target_id, float weight)
+void Graph::insertEdge(int id, int target_id, float weight, float vertex_weight)
 {
-    Vertex *v = this->getVertex(id);
-    Vertex *target_vertex = this->getVertex(target_id);
+    if (id == target_id) {
+        std::cerr << "Vertices cannot have equal ID!" << std::endl;
+        return;
+    }
+
+    insertVertex(id, vertex_weight);
+    insertVertex(target_id, vertex_weight);
+    
     if (this->directed){
-        v->insertEdge(target_vertex, weight);
+        vertices[id]->insertEdge(target_id, weight);
     } else {
-        v->insertEdge(target_vertex, weight);
-        // v = this->getVertex(target_id);
-        target_vertex->insertEdge(v, weight);
+        vertices[id]->insertEdge(target_id, weight);
+        vertices[target_id]->insertEdge(id, weight);
     }
 }
 
@@ -153,29 +129,21 @@ void Graph::insertEdge(int id, int target_id, float weight)
  */
 bool Graph::searchVertex(int id)
 {
-    if (this->first_vertex != nullptr)
-    {
-        for (Vertex *v = this->first_vertex; v != nullptr; v = v->getNextVertex())
-            if (v->getId() == id)
-                return true;
-    }
-    
-    return false;
+    return vertices[id] != nullptr;
 }
 
-void Graph::printAdjList() 
+void Graph::printAdjList()
 {
-    std::cout << "Imprimindo Grafo como uma lista de adjacência:\n" << std::endl;
-    Vertex* v = first_vertex;
-    while(v != nullptr) {
+    std::cout << "Imprimindo Grafo como uma lista de adjacência:" << std::endl;
+    for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
+        Vertex *v = itV->second;
         std::cout << v->getId();
-        Edge* e = v->getFirstEdge();
-        while(e != nullptr) {
-            std::cout << " -> " << e->getTargetVertex()->getId();
-            e = e->getNextEdge();
+        std::unordered_map<int, Edge*> edges = v->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE) {
+            Edge *e = itE->second;
+            std::cout << " -> " << e->getTargetId();
         }
         std::cout << std::endl;
-        v = v->getNextVertex();
     }
 }
 
@@ -187,38 +155,37 @@ void Graph::printAdjList()
 void Graph::BFS(int id)
 {
     std::cout << "Caminhamento em largura:" << std::endl;
-    Vertex* v = getVertex(id);
-    
-    if (v == nullptr) {
+    if (!searchVertex(id)) {
         std::cerr << "Vertex not found!" << std::endl;
         return;
     }
     
     // Hash Set of visited vertices
-    std::unordered_set<Vertex*> visited;
+    std::unordered_set<int> visited;
  
     // Queue of vertices to visit
-    std::queue<Vertex*> toVisit;
+    std::queue<int> toVisit;
  
     // Enqueue current vertex and add it to the visited vertices set
-    toVisit.push(v);
-    visited.insert(v);
+    toVisit.push(id);
+    visited.insert(id);
  
     while(!toVisit.empty())
     {
         // Dequeue top vertex in queue
-        v = toVisit.front();
-        std::cout << v->getId() << " ";
+        id = toVisit.front();
+        std::cout << id << " ";
         toVisit.pop();
  
         // Check for unvisited vertices in adjacency list and enqueue them
-        for(Edge *e = v->getFirstEdge(); e != nullptr; e = e->getNextEdge())
+        std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
         {
-            Vertex* target_vertex = e->getTargetVertex();
-            if(!visited.count(target_vertex))
+            int target_id = itE->second->getTargetId();
+            if(!visited.count(target_id))
             {
-                visited.insert(target_vertex);
-                toVisit.push(target_vertex);
+                visited.insert(target_id);
+                toVisit.push(target_id);
             }
         }
     }
@@ -246,16 +213,27 @@ void Graph::saveToDot(std::string outfile_name)
         edgeop = " -- ";
     }
 
+    if(isWeightedVertex()) {
+        for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
+            Vertex *v = itV->second;
+            outfile << v->getId() << " [weight=" << v->getWeight() << "];" << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
     // Set of "edges" that have already been written to the file
     std::set<std::pair<int,int>> included;
 
     // Iterate through vertices and edges
-    for(Vertex* v = first_vertex; v != nullptr; v = v->getNextVertex()) {
-        for(Edge* e = v->getFirstEdge(); e != nullptr; e = e->getNextEdge()) {
-
+    for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
+        Vertex *v = itV->second;
+        std::unordered_map<int, Edge*> edges = v->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE) {
+            Edge *e = itE->second;
+            
             // Create "edge" in which the smallest vertex comes first
             int greatest = v->getId();
-            int smallest = e->getTargetVertex()->getId();
+            int smallest = e->getTargetId();
             if(greatest < smallest)
                 std::swap(greatest, smallest);
 
@@ -265,7 +243,11 @@ void Graph::saveToDot(std::string outfile_name)
             // Then mark as included and write it to the file
             if(!included.count(pair_vertices)) {
                 included.insert(pair_vertices);
-                outfile << v->getId() << edgeop << e->getTargetVertex()->getId() << ";" << std::endl;
+                outfile << v->getId() << edgeop << e->getTargetId();
+                if(isWeightedEdge()) {
+                    outfile << " [weight=" << e->getWeight() << "]";
+                }
+                outfile << ";" << std::endl;
             }
         }
     }

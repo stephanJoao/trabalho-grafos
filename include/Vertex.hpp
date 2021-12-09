@@ -1,19 +1,19 @@
 #ifndef VERTEX_HPP
 #define VERTEX_HPP
 
+#include <unordered_map>
+
 #include "Edge.hpp"
 
 class Vertex
 {
     // Attributes
     private:
-        Edge* first_edge;
-        Edge* last_edge;
+        std::unordered_map<int, Edge*> edges;
         int id;
         unsigned int in_degree;
         unsigned int out_degree;
         float weight;
-        Vertex* next_vertex;
 
     // Methods
     private:
@@ -26,22 +26,19 @@ class Vertex
 
         // Getters and setters
 
-        Edge* getFirstEdge();
-        Edge* getLastEdge();
         int getId();
         int getInDegree();
         int getOutDegree();
         float getWeight();
         void setWeight(float weight);
-        Vertex* getNextVertex();
-        void setNextVertex(Vertex* vertex);
+        std::unordered_map<int, Edge*> getEdges();
 
         // Other methods
 
         bool searchEdge(int target_id);
-        void insertEdge(Vertex* target_vertex, float weight = 1);
+        void insertEdge(int target_id, float weight = 1);
         void removeAllEdges();
-        int removeEdge(int id, bool directed, Vertex* target_vertex);
+        // int removeEdge(int id, bool directed, Vertex* target_vertex);
         void incrementOutDegree();
         void decrementOutDegree();
         void incrementInDegree();
