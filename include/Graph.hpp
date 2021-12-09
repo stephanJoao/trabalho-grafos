@@ -48,7 +48,7 @@ class Graph
 
         void printAdjList();
         void BFS(int id);
-
+        void saveToDot(std::string outfile_name);
     //     //methods phase1
 
     //     void topologicalSorting();

@@ -18,6 +18,7 @@ int main() {
 
     g->printAdjList();
     g->BFS(1);
+    g->saveToDot("graph1.dot");
     delete g;
     return 0;
 }

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <unordered_set>
 #include <queue>
+#include <fstream>
+#include <set>
 // #include <stack>
 // #include <list>
 // #include <math.h>
@@ -221,6 +223,54 @@ void Graph::BFS(int id)
         }
     }
     std::cout << std::endl;
+}
+
+/**
+ * @brief Save the graph in .dot
+ * 
+ * @param outfile_name Name of the file to which the graph will be saved
+ */
+void Graph::saveToDot(std::string outfile_name)
+{
+    std::ofstream outfile(outfile_name);
+    std::string edgeop; // "->" or "--"
+
+    if (this->directed)
+    {
+        outfile << "digraph Grafo {" << std::endl;
+        edgeop = " -> ";
+    }
+    else
+    {
+        outfile << "graph Grafo {" << std::endl;
+        edgeop = " -- ";
+    }
+
+    // Set of "edges" that have already been written to the file
+    std::set<std::pair<int,int>> included;
+
+    // Iterate through vertices and edges
+    for(Vertex* v = first_vertex; v != nullptr; v = v->getNextVertex()) {
+        for(Edge* e = v->getFirstEdge(); e != nullptr; e = e->getNextEdge()) {
+
+            // Create "edge" in which the smallest vertex comes first
+            int greatest = v->getId();
+            int smallest = e->getTargetVertex()->getId();
+            if(greatest < smallest)
+                std::swap(greatest, smallest);
+
+            std::pair<int,int> pair_vertices(smallest, greatest);
+
+            // If this "edge" hasn't been included yet
+            // Then mark as included and write it to the file
+            if(!included.count(pair_vertices)) {
+                included.insert(pair_vertices);
+                outfile << v->getId() << edgeop << e->getTargetVertex()->getId() << ";" << std::endl;
+            }
+        }
+    }
+    
+    outfile << "}" << std::endl;
 }
 
 // //Function that prints a set of edges belongs breadth tree
