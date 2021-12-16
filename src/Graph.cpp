@@ -97,21 +97,21 @@ void Graph::insertVertex(int id, float weight)
  * @param target_id Second Vertex's ID
  * @param weight Weight of the edge
  */
-void Graph::insertEdge(int id, int target_id, float weight, float vertex_weight)
+void Graph::insertEdge(int id, int target_id, float edge_weight, float source_vertex_weight, float target_vertex_weight)
 {
     if (id == target_id) {
         std::cerr << "Vertices cannot have equal ID!" << std::endl;
         return;
     }
 
-    insertVertex(id, vertex_weight);
-    insertVertex(target_id, vertex_weight);
+    insertVertex(id, source_vertex_weight);
+    insertVertex(target_id, target_vertex_weight);
     
     if (this->directed){
-        vertices[id]->insertEdge(target_id, weight);
+        vertices[id]->insertEdge(target_id, edge_weight);
     } else {
-        vertices[id]->insertEdge(target_id, weight);
-        vertices[target_id]->insertEdge(id, weight);
+        vertices[id]->insertEdge(target_id, edge_weight);
+        vertices[target_id]->insertEdge(id, edge_weight);
     }
 }
 

@@ -41,7 +41,8 @@ class Graph
         //Other methods
 
         void insertVertex(int id, float weight = 1);
-        void insertEdge(int id, int target_id, float weight = 1, float vertex_weight = 1);
+        void insertEdge(int id, int target_id, float edge_weight = 1, 
+                        float source_vertex_weight = 1, float target_vertex_weight = 1);
         // void removeVertex(int id);
         bool searchVertex(int id);
 
