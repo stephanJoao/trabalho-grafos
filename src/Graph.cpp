@@ -213,7 +213,7 @@ void Graph::saveToDot(std::string outfile_name)
 typedef struct
 {
     int length;
-    //std::vector<int> path;
+    std::vector<int> path;
 }Length;
 
 
@@ -247,14 +247,16 @@ void Graph::Dijkstra(int source_id, int target_id)
     // Initializes vector of lengths and paths (called pi)
     std::cout << "Initializes pi" << std::endl;
     Length *pi = new Length[vertices.size() + 1];
-    for(int i = 0; i < vertices.size(); i++)
-        pi[i].length = std::numeric_limits<int>::max() - 1;
+    for(int i = 0; i < vertices.size(); i++) {
+        pi[i].length = std::numeric_limits<int>::max();
+    }
     pi[source_id].length = 0;
     std::unordered_map<int, Edge*> edges = vertices[source_id]->getEdges();
     for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
         Edge *e = it->second;
         pi[e->getTargetId()].length = e->getWeight();
-        //TODO atualizar path
+        pi[e->getTargetId()].path.push_back(source_id);
+        pi[e->getTargetId()].path.push_back(e->getTargetId());
     }
 
     // Algorithm
@@ -286,13 +288,24 @@ void Graph::Dijkstra(int source_id, int target_id)
             Edge *e = it->second;
             if(pi[e->getTargetId()].length > pi[j_id].length + e->getWeight()) {
                 pi[e->getTargetId()].length = pi[j_id].length + e->getWeight();
-                //TODO atualizar path
+                pi[e->getTargetId()].path = pi[j_id].path;
+                pi[e->getTargetId()].path.push_back(e->getTargetId());
             }
             std::cout << "Iteratin' through j vertices" << std::endl;
         }
         std::cout << "Iterated through j vertices" << std::endl;
     }
-    std::cout << "Shortest path: " << pi[target_id].length << std::endl;
+    for(int i = 0; i < vertices.size(); i++) {
+        std::cout << pi[i].length << " ";
+    }
+    std::cout << "\n";
+    for(int j = 0; j < vertices.size(); j++)
+    {
+        for(int i = 0; i < pi[j].path.size(); i++) {
+            std::cout << pi[j].path[i] << " ";
+        }
+        std::cout << "\n";
+    }
 
     delete [] pi;
 }
