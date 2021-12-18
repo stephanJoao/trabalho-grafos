@@ -126,6 +126,7 @@ int main(int argc, char const *argv[])
     // g->printAdjList();
     // g->BFS(1);
     g->saveToDot("graph1.dot");
-    // delete g;
+    g->Dijkstra(0, 1);
+    delete g;
     return 0;
 }

@@ -100,7 +100,7 @@ void Graph::insertVertex(int id, float weight)
 void Graph::insertEdge(int id, int target_id, float edge_weight, float source_vertex_weight, float target_vertex_weight)
 {
     if (id == target_id) {
-        std::cerr << "Vertices cannot have equal ID!" << std::endl;
+        std::cerr << "Vertices cannot have equal ID! (Selfloop not allowed)" << std::endl;
         return;
     }
 
@@ -228,7 +228,7 @@ void Graph::Dijkstra(int source_id, int target_id)
 {
     //TODO verificação da existência dos nós
     // Initializes non iterated vertices
-    std::cout << "Initializes non iterated vertices" << std::endl;
+    //std::cout << "Initializes non iterated vertices" << std::endl;
 
     std::vector<int> non_iterated;
     for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
@@ -238,13 +238,14 @@ void Graph::Dijkstra(int source_id, int target_id)
     }
     
     // Initializes iterated vertices
-    std::cout << "Initializes iterated vertices" << std::endl;
+    //std::cout << "Initializes iterated vertices" << std::endl;
 
     std::vector<int> iterated;
     iterated.push_back(source_id);
 
     // Initializes vector of lengths and paths (called pi)
-    std::cout << "Initializes pi" << std::endl;
+    //std::cout << "Initializes pi" << std::endl;
+    
     Length *pi = new Length[vertices.size() + 1];
     for(int i = 0; i < vertices.size(); i++) {
         pi[i].length = std::numeric_limits<int>::max();
@@ -260,13 +261,13 @@ void Graph::Dijkstra(int source_id, int target_id)
 
     // Algorithm
     while(non_iterated.size() > 0) {
-        std::cout << "Chegou aqui?" << std::endl;
-        for(int i = 0; i < non_iterated.size(); i++) 
-            std::cout << non_iterated[i] << " ";
-        std::cout << "\nPI: ";
-        for(int i = 0; i < vertices.size(); i++) 
-            std::cout << pi[i].length << " ";
-        std::cout << "\n";
+        // std::cout << "Chegou aqui?" << std::endl;
+        // for(int i = 0; i < non_iterated.size(); i++) 
+        //     std::cout << non_iterated[i] << " ";
+        // std::cout << "\nPI: ";
+        // for(int i = 0; i < vertices.size(); i++) 
+        //     std::cout << pi[i].length << " ";
+        // std::cout << "\n";
         
         // Find j with minimal path cost in non_iterated
         int j = 0;
@@ -280,9 +281,9 @@ void Graph::Dijkstra(int source_id, int target_id)
             }
         }
         // Removes this j from the non_iterated
-        std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
+        //std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
         non_iterated.erase(non_iterated.begin() + j);
-        std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
+        //std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
 
         // Iterate through j adjacencies
         std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
@@ -304,10 +305,11 @@ void Graph::Dijkstra(int source_id, int target_id)
                 if(!non)
                     non_iterated.push_back(e->getTargetId());
             }
-            std::cout << "Iteratin' through j vertices" << std::endl;
+            //std::cout << "Iteratin' through j vertices" << std::endl;
         }
-        std::cout << "Iterated through j vertices" << std::endl;
+        //std::cout << "Iterated through j vertices" << std::endl;
     }
+
     for(int i = 0; i < vertices.size(); i++) {
         std::cout << pi[i].length << " ";
     }
