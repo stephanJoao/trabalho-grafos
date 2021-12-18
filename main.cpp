@@ -5,8 +5,8 @@
 
 using namespace std;
 
-Graph* leGrafo(ifstream& input_file, bool directed, bool weighted_edge, bool weighted_vertex){
-    
+Graph* readGraph(ifstream& input_file, bool directed, bool weighted_edge, bool weighted_vertex)
+{    
     //Variáveis para auxiliar na criação dos nós no Grafo
     int idNodeSource;
     int idNodeTarget;
@@ -59,14 +59,13 @@ Graph* leGrafo(ifstream& input_file, bool directed, bool weighted_edge, bool wei
     return graph;
 }
 
-int main(int argc, char const *argv[]) {
-
-    //Verificação se todos os parâmetros do programa foram entrados
-    if (argc != 6) {
-
+int main(int argc, char const *argv[]) 
+{
+    // Verifies if all parameters have been provided
+    if (argc != 6) 
+    {
         cout << "ERROR: Expecting: ./<program_name> <input_file> <output_file> <directed> <weighted_edge> <weighted_vertex> " << endl;
         return 1;
-
     }
 
     string program_name(argv[0]);
@@ -82,14 +81,14 @@ int main(int argc, char const *argv[]) {
     std::cout << "Weighted vertex: " << weighted_vertex << std::endl;
 
 
-    // leitura do arquivo de entrada
+    // Read of input_file
     ifstream input_file;
     input_file.open(input_file_name, ios::in);
 
     Graph *g;
     if(input_file.is_open()){
 
-        g = leGrafo(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+        g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
 
     } else {
         cout << "Unable to open " << input_file_name << std::endl;
