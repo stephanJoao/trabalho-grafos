@@ -148,48 +148,71 @@ void Graph::printAdjList()
 }
 
 /**
- * @brief Prints the vertices in order according to the Breadth First Search algorithm
+ * @brief Print the vertices in order of visit according to the Breadth First Search algorithm. 
+ * Color legend:
+ * - White: unvisited
+ * - Gray: to visit
+ * - Black: visited
  * 
  * @param id ID of the starting vertex
+ * @return Set of back edges
  */
-void Graph::BFS(int id)
+std::set<std::pair<int, int>>* Graph::BFS(int id)
 {
     std::cout << "Caminhamento em largura:" << std::endl;
+
+    // Set of back edges (which will be printed in a different color in the .dot)
+    std::set<std::pair<int, int>>* back_edges = new std::set<std::pair<int, int>>;
+
     if (!searchVertex(id)) {
         std::cerr << "Vertex not found!" << std::endl;
-        return;
-    }
-    
-    // Hash Set of visited vertices
-    std::unordered_set<int> visited;
- 
-    // Queue of vertices to visit
-    std::queue<int> toVisit;
- 
-    // Enqueue current vertex and add it to the visited vertices set
-    toVisit.push(id);
-    visited.insert(id);
- 
-    while(!toVisit.empty())
-    {
-        // Dequeue top vertex in queue
-        id = toVisit.front();
-        std::cout << id << " ";
-        toVisit.pop();
- 
-        // Check for unvisited vertices in adjacency list and enqueue them
-        std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
-        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
-        {
-            int target_id = itE->second->getTargetId();
-            if(!visited.count(target_id))
-            {
-                visited.insert(target_id);
-                toVisit.push(target_id);
-            }
+    } else {
+
+        std::unordered_map<int, char> colored_vertices;
+        for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+            colored_vertices.insert({it->second->getId(), 'w'}); // Insert as not visited vertex (white)
         }
+
+        colored_vertices.at(id) = 'g'; // Vertex v is the first to be visited (gray)
+    
+        // Queue of vertices to visit
+        std::queue<int> toVisit;
+    
+        // Enqueue current vertex and mark it as "to visit"
+        toVisit.push(id);
+
+        while(!toVisit.empty())
+        {
+            // Dequeue top vertex in queue
+            id = toVisit.front();
+            std::cout << id << " ";
+            toVisit.pop();
+    
+            // Check for unvisited vertices in adjacency list and enqueue them
+            std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
+            for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
+            {
+                int target_id = itE->second->getTargetId();
+                if(colored_vertices.at(target_id) == 'w')
+                {
+                    colored_vertices.at(target_id) = 'g';
+                    toVisit.push(target_id);
+                }
+                else if(colored_vertices.at(target_id) == 'g')
+                {
+                    std::pair<int, int> pair_vertices(id, target_id);
+                    if(pair_vertices.second < pair_vertices.first)
+                        std::swap(pair_vertices.first, pair_vertices.second);
+                    back_edges->insert(pair_vertices);
+                }
+            }
+
+            colored_vertices.at(id) = 'b'; // Mark current vertex as visited (black)
+        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
+
+    return back_edges;
 }
 
 /**
@@ -197,7 +220,7 @@ void Graph::BFS(int id)
  * 
  * @param outfile_name Name of the file to which the graph will be saved
  */
-void Graph::saveToDot(std::string outfile_name)
+void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *back_edges)
 {
     std::ofstream outfile(outfile_name);
     std::string edgeop; // "->" or "--"
@@ -232,12 +255,9 @@ void Graph::saveToDot(std::string outfile_name)
             Edge *e = itE->second;
             
             // Create "edge" in which the smallest vertex comes first
-            int greatest = v->getId();
-            int smallest = e->getTargetId();
-            if(greatest < smallest)
-                std::swap(greatest, smallest);
-
-            std::pair<int,int> pair_vertices(smallest, greatest);
+            std::pair<int,int> pair_vertices(v->getId(), e->getTargetId());
+            if(pair_vertices.second < pair_vertices.first)
+                std::swap(pair_vertices.first, pair_vertices.second);
 
             // If this "edge" hasn't been included yet
             // Then mark as included and write it to the file
@@ -245,7 +265,12 @@ void Graph::saveToDot(std::string outfile_name)
                 included.insert(pair_vertices);
                 outfile << v->getId() << edgeop << e->getTargetId();
                 if(isWeightedEdge()) {
-                    outfile << " [weight=" << e->getWeight() << "]";
+                    outfile << " [weight=" << e->getWeight();
+                    if(back_edges != nullptr && back_edges->count(pair_vertices))
+                        outfile << " color=\"gray\"";
+                    outfile << "]";
+                } else if(back_edges != nullptr && back_edges->count(pair_vertices)) {
+                    outfile << " [color=\"gray\"]";
                 }
                 outfile << ";" << std::endl;
             }

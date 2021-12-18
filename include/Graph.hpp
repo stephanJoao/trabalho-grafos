@@ -4,7 +4,7 @@
 // #include <fstream>
 // #include <stack>
 // #include <list>
-
+#include <set>
 #include <unordered_map>
 
 #include "Vertex.hpp"
@@ -47,8 +47,8 @@ class Graph
         bool searchVertex(int id);
 
         void printAdjList();
-        void BFS(int id);
-        void saveToDot(std::string outfile_name);
+        std::set<std::pair<int, int>>* BFS(int id);
+        void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *back_edges = nullptr);
     //     //methods phase1
 
     //     void topologicalSorting();

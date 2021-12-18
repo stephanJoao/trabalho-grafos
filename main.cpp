@@ -125,8 +125,10 @@ int main(int argc, char const *argv[]) {
     // g->insertEdge(6, 7, 6);
 
     // g->printAdjList();
-    // g->BFS(1);
-    g->saveToDot("graph1.dot");
-    // delete g;
+    // std::set<std::pair<int, int>> *back_edges = g->BFS(1);
+    // g->saveToDot("graph1.dot", back_edges);
+    delete g;
+
+    input_file.close();
     return 0;
 }
