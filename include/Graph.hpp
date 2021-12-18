@@ -47,8 +47,12 @@ class Graph
         bool searchVertex(int id);
 
         void printAdjList();
-        void BFS(int id);
         void saveToDot(std::string outfile_name);
+        
+        void Dijkstra(int source_id, int target_id);
+        void BFS(int id);
+        
+        
     //     //methods phase1
 
     //     void topologicalSorting();
@@ -57,7 +61,6 @@ class Graph
     //     Graph* agmKuskal();
     //     Graph* agmPrim();
     //     float floydMarshall(int idSource, int idTarget);
-    //     float dijkstra(int idSource, int idTarget);
 
     //     //methods phase1
 

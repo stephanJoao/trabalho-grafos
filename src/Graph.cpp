@@ -148,51 +148,6 @@ void Graph::printAdjList()
 }
 
 /**
- * @brief Prints the vertices in order according to the Breadth First Search algorithm
- * 
- * @param id ID of the starting vertex
- */
-void Graph::BFS(int id)
-{
-    std::cout << "Caminhamento em largura:" << std::endl;
-    if (!searchVertex(id)) {
-        std::cerr << "Vertex not found!" << std::endl;
-        return;
-    }
-    
-    // Hash Set of visited vertices
-    std::unordered_set<int> visited;
- 
-    // Queue of vertices to visit
-    std::queue<int> toVisit;
- 
-    // Enqueue current vertex and add it to the visited vertices set
-    toVisit.push(id);
-    visited.insert(id);
- 
-    while(!toVisit.empty())
-    {
-        // Dequeue top vertex in queue
-        id = toVisit.front();
-        std::cout << id << " ";
-        toVisit.pop();
- 
-        // Check for unvisited vertices in adjacency list and enqueue them
-        std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
-        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
-        {
-            int target_id = itE->second->getTargetId();
-            if(!visited.count(target_id))
-            {
-                visited.insert(target_id);
-                toVisit.push(target_id);
-            }
-        }
-    }
-    std::cout << std::endl;
-}
-
-/**
  * @brief Save the graph in .dot
  * 
  * @param outfile_name Name of the file to which the graph will be saved
@@ -254,6 +209,166 @@ void Graph::saveToDot(std::string outfile_name)
     
     outfile << "}" << std::endl;
 }
+
+typedef struct
+{
+    int length;
+    std::vector<int> path;
+}Length;
+
+
+/**
+ * @brief Prints the smallest path between two vertices 
+ //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
+ * 
+ * @param source_id ID of the starting vertex
+ * @param target_id ID of the target vertex
+ */
+void Graph::Dijkstra(int source_id, int target_id)
+{
+    //TODO verificação da existência dos nós
+    // Initializes non iterated vertices
+    std::cout << "Initializes non iterated vertices" << std::endl;
+
+    std::vector<int> non_iterated;
+    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+        Vertex *v = it->second;
+        if(v->getId() != source_id)
+            non_iterated.push_back(v->getId());
+    }
+    
+    // Initializes iterated vertices
+    std::cout << "Initializes iterated vertices" << std::endl;
+
+    std::vector<int> iterated;
+    iterated.push_back(source_id);
+
+    // Initializes vector of lengths and paths (called pi)
+    std::cout << "Initializes pi" << std::endl;
+    Length *pi = new Length[vertices.size() + 1];
+    for(int i = 0; i < vertices.size(); i++) {
+        pi[i].length = std::numeric_limits<int>::max();
+    }
+    pi[source_id].length = 0;
+    std::unordered_map<int, Edge*> edges = vertices[source_id]->getEdges();
+    for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
+        Edge *e = it->second;
+        pi[e->getTargetId()].length = e->getWeight();
+        pi[e->getTargetId()].path.push_back(source_id);
+        pi[e->getTargetId()].path.push_back(e->getTargetId());
+    }
+
+    // Algorithm
+    while(non_iterated.size() > 0) {
+        std::cout << "Chegou aqui?" << std::endl;
+        for(int i = 0; i < non_iterated.size(); i++) 
+            std::cout << non_iterated[i] << " ";
+        std::cout << "\nPI: ";
+        for(int i = 0; i < vertices.size(); i++) 
+            std::cout << pi[i].length << " ";
+        std::cout << "\n";
+        
+        // Find j with minimal path cost in non_iterated
+        int j = 0;
+        int j_length = std::numeric_limits<int>::max();
+        int j_id = 0;
+        for(int i = 0 ; i < non_iterated.size(); i++) {
+            if(pi[non_iterated[i]].length < j_length) {
+                j = i;
+                j_id = non_iterated[j];
+                j_length = pi[j_id].length;
+            }
+        }
+        // Removes this j from the non_iterated
+        std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
+        non_iterated.erase(non_iterated.begin() + j);
+        std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
+
+        // Iterate through j adjacencies
+        std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
+            Edge *e = it->second;
+            int pi_aux;
+            pi_aux = pi[j_id].length + e->getWeight();
+            if(pi_aux < pi[e->getTargetId()].length) {
+                pi[e->getTargetId()].length = pi_aux;
+                pi[e->getTargetId()].path = pi[j_id].path;
+                pi[e->getTargetId()].path.push_back(e->getTargetId());
+                bool non = false;
+                for(int i = 0 ; i < non_iterated.size(); i++){
+                    if(non_iterated[i] == e->getTargetId()) {
+                        non = true;
+                        break;
+                    }
+                }
+                if(!non)
+                    non_iterated.push_back(e->getTargetId());
+            }
+            std::cout << "Iteratin' through j vertices" << std::endl;
+        }
+        std::cout << "Iterated through j vertices" << std::endl;
+    }
+    for(int i = 0; i < vertices.size(); i++) {
+        std::cout << pi[i].length << " ";
+    }
+    std::cout << "\n";
+    for(int j = 0; j < vertices.size(); j++)
+    {
+        for(int i = 0; i < pi[j].path.size(); i++) {
+            std::cout << pi[j].path[i] << " ";
+        }
+        std::cout << "\n";
+    }
+
+    delete [] pi;
+}
+
+/**
+ * @brief Prints the vertices in order according to the Breadth First Search algorithm
+ * 
+ * @param id ID of the starting vertex
+ */
+void Graph::BFS(int id)
+{
+    std::cout << "Caminhamento em largura:" << std::endl;
+    if (!searchVertex(id)) {
+        std::cerr << "Vertex not found!" << std::endl;
+        return;
+    }
+    
+    // Hash Set of visited vertices
+    std::unordered_set<int> visited;
+ 
+    // Queue of vertices to visit
+    std::queue<int> toVisit;
+ 
+    // Enqueue current vertex and add it to the visited vertices set
+    toVisit.push(id);
+    visited.insert(id);
+ 
+    while(!toVisit.empty())
+    {
+        // Dequeue top vertex in queue
+        id = toVisit.front();
+        std::cout << id << " ";
+        toVisit.pop();
+ 
+        // Check for unvisited vertices in adjacency list and enqueue them
+        std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
+        {
+            int target_id = itE->second->getTargetId();
+            if(!visited.count(target_id))
+            {
+                visited.insert(target_id);
+                toVisit.push(target_id);
+            }
+        }
+    }
+    std::cout << std::endl;
+}
+
+
 
 // //Function that prints a set of edges belongs breadth tree
 
