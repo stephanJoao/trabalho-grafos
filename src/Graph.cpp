@@ -220,7 +220,6 @@ typedef struct
 /**
  * @brief Prints the smallest path between two vertices 
  //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
- //TODO Consertar erros do valgrind (?)
  * 
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
@@ -268,7 +267,8 @@ void Graph::Dijkstra(int source_id, int target_id)
         for(int i = 0; i < vertices.size(); i++) 
             std::cout << pi[i].length << " ";
         std::cout << "\n";
-
+        
+        // Find j with minimal path cost in non_iterated
         int j = 0;
         int j_length = std::numeric_limits<int>::max();
         int j_id = 0;
@@ -279,17 +279,30 @@ void Graph::Dijkstra(int source_id, int target_id)
                 j_length = pi[j_id].length;
             }
         }
+        // Removes this j from the non_iterated
         std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
         non_iterated.erase(non_iterated.begin() + j);
         std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
 
+        // Iterate through j adjacencies
         std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
         for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
             Edge *e = it->second;
-            if(pi[e->getTargetId()].length > pi[j_id].length + e->getWeight()) {
-                pi[e->getTargetId()].length = pi[j_id].length + e->getWeight();
+            int pi_aux;
+            pi_aux = pi[j_id].length + e->getWeight();
+            if(pi_aux < pi[e->getTargetId()].length) {
+                pi[e->getTargetId()].length = pi_aux;
                 pi[e->getTargetId()].path = pi[j_id].path;
                 pi[e->getTargetId()].path.push_back(e->getTargetId());
+                bool non = false;
+                for(int i = 0 ; i < non_iterated.size(); i++){
+                    if(non_iterated[i] == e->getTargetId()) {
+                        non = true;
+                        break;
+                    }
+                }
+                if(!non)
+                    non_iterated.push_back(e->getTargetId());
             }
             std::cout << "Iteratin' through j vertices" << std::endl;
         }
