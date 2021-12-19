@@ -101,13 +101,13 @@ int main(int argc, char const *argv[]) {
     // output_file.open(output_file_name, ios::out);
 
     // cout << "Hello World!!!" << endl;
-    // Graph *g = new Graph(0);
+    // Graph *g = new Graph(4);
     // g->insertEdge(1, 2);
     // g->insertEdge(1, 3);
     // g->insertEdge(1, 4);
     // g->insertEdge(2, 3);
     
-    // Graph *g = new Graph(0, false, true, false);
+    // Graph *g = new Graph(8, false, true, false);
     // g->insertEdge(1, 2, 5);
     // g->insertEdge(1, 3, 8);
     // g->insertEdge(1, 6, 7);
@@ -125,8 +125,13 @@ int main(int argc, char const *argv[]) {
     // g->insertEdge(6, 7, 6);
 
     // g->printAdjList();
-    // std::set<std::pair<int, int>> *back_edges = g->BFS(1);
-    // g->saveToDot("graph1.dot", back_edges);
+    // std::set<std::pair<int, int>> *mst_edges = g->MST_Kruskal();
+    // g->saveToDot("mst_kruskal.dot", mst_edges);
+
+    // std::set<std::pair<int, int>> *back_edges = new std::set<std::pair<int, int>>;
+    // std::set<std::pair<int, int>> *tree_edges = g->BFS(1, back_edges);
+    // g->saveToDot("bfs_tree.dot", tree_edges, back_edges);
+
     delete g;
 
     input_file.close();

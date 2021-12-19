@@ -5,7 +5,7 @@
 #include <fstream>
 #include <set>
 // #include <stack>
-// #include <list>
+#include <list>
 // #include <math.h>
 // #include <cstdlib>
 // #include <ctime>
@@ -132,6 +132,7 @@ bool Graph::searchVertex(int id)
     return vertices[id] != nullptr;
 }
 
+// Print adjacency list
 void Graph::printAdjList()
 {
     std::cout << "Imprimindo Grafo como uma lista de adjacência:" << std::endl;
@@ -147,6 +148,103 @@ void Graph::printAdjList()
     }
 }
 
+struct SimpleEdge
+{
+    int a;
+    int b;
+    int weight;
+
+    SimpleEdge(int a, int b, int weight, bool directed)
+    {
+        if(!directed && b < a)
+            std::swap(a, b);
+        
+        this->a = a;
+        this->b = b;
+        this->weight = weight;
+    }
+
+    bool operator <(const SimpleEdge & e) const
+    {
+        return weight < e.weight;
+    }
+
+    bool operator==(const SimpleEdge& e) const
+    {
+        if (a != e.a)
+            return false;
+        if (b != e.b)
+            return false;
+        return true;
+    }
+};
+
+inline bool operator<(const SimpleEdge& e1, const SimpleEdge& e2)
+{
+    return e1.a < e2.a;
+}
+
+/**
+ * @brief Kruskal's Minimum Spanning Tree
+ * 
+ * @return mst_edges Set of tree edges
+ */
+std::set<std::pair<int, int>>* Graph::MST_Kruskal()
+{
+    std::cout << "Arvore Geradora Minima de Kruskal" << std::endl;
+    
+    if (vertices.empty()) {
+        std::cerr << "No vertices in graph!" << std::endl;
+        return nullptr;
+    }
+
+    std::unordered_map<int, int> subsets;
+    std::list<SimpleEdge> sorted_edges;
+    std::set<std::pair<int, int>> *mst_edges = new std::set<std::pair<int, int>>;
+    int cost = 0;
+
+    int i = 0;
+    for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
+        subsets.insert({itV->second->getId(), i});
+        i++;
+
+        std::unordered_map<int, Edge*> edges = itV->second->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE) {
+            sorted_edges.push_back(SimpleEdge(itV->second->getId(), itE->second->getTargetId(), itE->second->getWeight(), directed));
+        }
+    }
+
+    sorted_edges.sort();
+    sorted_edges.unique();
+    
+    i = 0;
+    while(i < order-1 && !sorted_edges.empty())
+    {
+        SimpleEdge e = sorted_edges.front();
+        sorted_edges.pop_front();
+
+        int smallest = subsets.at(e.a);
+        int greatest = subsets.at(e.b);
+        if(smallest != greatest)
+        {
+            mst_edges->insert(std::pair<int, int>(e.a, e.b));
+            cost += e.weight;
+
+            if(greatest < smallest)
+                std::swap(smallest, greatest);
+            
+            for(std::unordered_map<int, int>::iterator it = subsets.begin(); it != subsets.end(); ++it) {
+                if(it->second == greatest)
+                    it->second = smallest;
+            }
+            i++;
+        }
+    }
+
+    std::cout << "Custo: " << cost << std::endl;
+    return mst_edges;
+}
+
 /**
  * @brief Print the vertices in order of visit according to the Breadth First Search algorithm. 
  * Color legend:
@@ -155,64 +253,69 @@ void Graph::printAdjList()
  * - Black: visited
  * 
  * @param id ID of the starting vertex
- * @return Set of back edges
+ * @param back_edges Set of back edges (will be overwritten)
+ * @return tree_edges Set of tree edges
  */
-std::set<std::pair<int, int>>* Graph::BFS(int id)
+std::set<std::pair<int, int>>* Graph::BFS(int id, std::set<std::pair<int, int>>* back_edges)
 {
     std::cout << "Caminhamento em largura:" << std::endl;
 
-    // Set of back edges (which will be printed in a different color in the .dot)
-    std::set<std::pair<int, int>>* back_edges = new std::set<std::pair<int, int>>;
-
     if (!searchVertex(id)) {
         std::cerr << "Vertex not found!" << std::endl;
-    } else {
-
-        std::unordered_map<int, char> colored_vertices;
-        for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
-            colored_vertices.insert({it->second->getId(), 'w'}); // Insert as not visited vertex (white)
-        }
-
-        colored_vertices.at(id) = 'g'; // Vertex v is the first to be visited (gray)
-    
-        // Queue of vertices to visit
-        std::queue<int> toVisit;
-    
-        // Enqueue current vertex and mark it as "to visit"
-        toVisit.push(id);
-
-        while(!toVisit.empty())
-        {
-            // Dequeue top vertex in queue
-            id = toVisit.front();
-            std::cout << id << " ";
-            toVisit.pop();
-    
-            // Check for unvisited vertices in adjacency list and enqueue them
-            std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
-            for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
-            {
-                int target_id = itE->second->getTargetId();
-                if(colored_vertices.at(target_id) == 'w')
-                {
-                    colored_vertices.at(target_id) = 'g';
-                    toVisit.push(target_id);
-                }
-                else if(colored_vertices.at(target_id) == 'g')
-                {
-                    std::pair<int, int> pair_vertices(id, target_id);
-                    if(pair_vertices.second < pair_vertices.first)
-                        std::swap(pair_vertices.first, pair_vertices.second);
-                    back_edges->insert(pair_vertices);
-                }
-            }
-
-            colored_vertices.at(id) = 'b'; // Mark current vertex as visited (black)
-        }
-        std::cout << std::endl;
+        return nullptr;
     }
 
-    return back_edges;
+    // Set of tree edges (which will be printed in a different color in the .dot)
+    std::set<std::pair<int, int>>* tree_edges = new std::set<std::pair<int, int>>;
+
+    std::unordered_map<int, char> colored_vertices;
+    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+        colored_vertices.insert({it->second->getId(), 'w'}); // Insert as not visited vertex (white)
+    }
+
+    colored_vertices.at(id) = 'g'; // Vertex v is the first to be visited (gray)
+
+    // Queue of vertices to visit
+    std::queue<int> toVisit;
+
+    // Enqueue current vertex and mark it as "to visit"
+    toVisit.push(id);
+
+    while(!toVisit.empty())
+    {
+        // Dequeue top vertex in queue
+        id = toVisit.front();
+        std::cout << id << " ";
+        toVisit.pop();
+
+        // Check for unvisited vertices in adjacency list and enqueue them
+        std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
+        {
+            int target_id = itE->second->getTargetId();
+            if(colored_vertices.at(target_id) == 'w')
+            {
+                std::pair<int, int> pair_vertices(id, target_id);
+                if(pair_vertices.second < pair_vertices.first)
+                    std::swap(pair_vertices.first, pair_vertices.second);
+                tree_edges->insert(pair_vertices);
+                colored_vertices.at(target_id) = 'g';
+                toVisit.push(target_id);
+            }
+            else if(colored_vertices.at(target_id) == 'g')
+            {
+                std::pair<int, int> pair_vertices(id, target_id);
+                if(pair_vertices.second < pair_vertices.first)
+                    std::swap(pair_vertices.first, pair_vertices.second);
+                back_edges->insert(pair_vertices);
+            }
+        }
+
+        colored_vertices.at(id) = 'b'; // Mark current vertex as visited (black)
+    }
+    std::cout << std::endl;
+
+    return tree_edges;
 }
 
 /**
@@ -220,7 +323,8 @@ std::set<std::pair<int, int>>* Graph::BFS(int id)
  * 
  * @param outfile_name Name of the file to which the graph will be saved
  */
-void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *back_edges)
+void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges, 
+std::set<std::pair<int,int>> *dashed_edges)
 {
     std::ofstream outfile(outfile_name);
     std::string edgeop; // "->" or "--"
@@ -266,11 +370,16 @@ void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *ba
                 outfile << v->getId() << edgeop << e->getTargetId();
                 if(isWeightedEdge()) {
                     outfile << " [weight=" << e->getWeight();
-                    if(back_edges != nullptr && back_edges->count(pair_vertices))
-                        outfile << " color=\"gray\"";
+                    if(red_edges != nullptr && red_edges->count(pair_vertices))
+                        outfile << " color=\"red\"";
+                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
+                        outfile << " style=\"dashed\"";
                     outfile << "]";
-                } else if(back_edges != nullptr && back_edges->count(pair_vertices)) {
-                    outfile << " [color=\"gray\"]";
+                } else { 
+                    if(red_edges != nullptr && red_edges->count(pair_vertices))
+                        outfile << " [color=\"red\"]";
+                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
+                        outfile << " [style=\"dashed\"]";
                 }
                 outfile << ";" << std::endl;
             }

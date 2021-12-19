@@ -47,8 +47,11 @@ class Graph
         bool searchVertex(int id);
 
         void printAdjList();
-        std::set<std::pair<int, int>>* BFS(int id);
-        void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *back_edges = nullptr);
+
+        std::set<std::pair<int, int>>* MST_Kruskal();
+        std::set<std::pair<int, int>>* BFS(int id, std::set<std::pair<int, int>>* back_edges);
+        void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges = nullptr, 
+        std::set<std::pair<int,int>> *gray_edges = nullptr);
     //     //methods phase1
 
     //     void topologicalSorting();
