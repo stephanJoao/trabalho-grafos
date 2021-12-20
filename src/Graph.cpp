@@ -220,6 +220,7 @@ typedef struct
 /**
  * @brief Prints the smallest path between two vertices 
  //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
+ //TODO Grafos de exemplo não ponderados com segmentation fault
  * 
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
@@ -259,6 +260,7 @@ void Graph::Dijkstra(int source_id, int target_id)
         pi[e->getTargetId()].path.push_back(e->getTargetId());
     }
 
+    //std::cout << "Inicia algoritmo" << std::endl;
     // Algorithm
     while(non_iterated.size() > 0) {
         // std::cout << "Chegou aqui?" << std::endl;
@@ -314,13 +316,13 @@ void Graph::Dijkstra(int source_id, int target_id)
         std::cout << pi[i].length << " ";
     }
     std::cout << "\n";
-    for(int j = 0; j < vertices.size(); j++)
-    {
-        for(int i = 0; i < pi[j].path.size(); i++) {
-            std::cout << pi[j].path[i] << " ";
-        }
-        std::cout << "\n";
-    }
+    // for(int j = 0; j < vertices.size(); j++)
+    // {
+    //     for(int i = 0; i < pi[j].path.size(); i++) {
+    //         std::cout << pi[j].path[i] << " ";
+    //     }
+    //     std::cout << "\n";
+    // }
 
     delete [] pi;
 }
