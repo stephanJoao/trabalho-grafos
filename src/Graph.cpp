@@ -371,16 +371,6 @@ void Graph::BFS(int id)
     std::cout << std::endl;
 }
 
-/**
- * @brief Prints the vertices in order according to the Depth First Search algorithm
- * 
- * @param id ID of the starting vertex
- */
-void Graph::DFS(int id)
-{
-
-}
-
 void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order)
 {
 
