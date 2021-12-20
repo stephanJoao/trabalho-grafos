@@ -384,15 +384,15 @@ void Graph::DFS(int id)
 void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order)
 {
 
-    std::cout << id << " ";
-
     // Iterator for adjacent list
     std::unordered_map<int, Edge*>::iterator itE;
 
     // Root vertex becomes gray
     colors.at(id) = 1;
 
-    for (itE = vertices[id]->getEdges().begin(); itE != vertices[id]->getEdges().end(); ++itE){
+    std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
+
+    for (itE = edges.begin(); itE != edges.end(); ++itE){
       
         // gets ID of adjascent vertex
         int target_id = itE->second->getTargetId();
@@ -402,7 +402,7 @@ void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<
             auxTopologicalSorting(target_id, colors, order);
         } else if (colors.at(target_id) == 1) {
             // graph has a return edge so can't have a topological sorting
-            std::cout << "Grafo não é um DAG! (grafo ciclico)" << std::endl;
+            std::cout << "Grafo não é um DAG! (grafo ciclico em (" << id << ", " << target_id << ")" << std::endl;
             return;
         }
 
@@ -443,9 +443,14 @@ void Graph::topologicalSorting(){
     // Loop through all unvisited vertices
     for (it = vertices.begin(); it != vertices.end(); ++it){
         if (colors.at(it->second->getId()) == 0){
-            std::cout << it->second->getId() << " eh branco" << std::endl;
+            /* std::cout << it->second->getId() << " eh branco" << std::endl; */
             auxTopologicalSorting(it->second->getId(), colors, topologicalOrder);
         }
+    }
+
+    while (!topologicalOrder.empty()){
+      std::cout << topologicalOrder.front() << " ";
+      topologicalOrder.pop_front();
     }
 
     std::cout << std::endl;
