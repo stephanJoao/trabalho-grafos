@@ -1,16 +1,9 @@
 #include <iostream>
-#include <unordered_map>
-#include <unordered_set>
-#include <queue>
 #include <fstream>
+#include <unordered_map>
+#include <queue>
 #include <set>
-// #include <stack>
-// #include <list>
-// #include <math.h>
-// #include <cstdlib>
-// #include <ctime>
-// #include <float.h>
-// #include <iomanip>
+#include <list>
 
 #include "../include/Graph.hpp"
 #include "../include/Vertex.hpp"
@@ -132,6 +125,7 @@ bool Graph::searchVertex(int id)
     return vertices[id] != nullptr;
 }
 
+// Print adjacency list
 void Graph::printAdjList()
 {
     std::cout << "Imprimindo Grafo como uma lista de adjacência:" << std::endl;
@@ -147,12 +141,186 @@ void Graph::printAdjList()
     }
 }
 
+struct SimpleEdge
+{
+    int a;
+    int b;
+    int weight;
+
+    SimpleEdge(int a, int b, int weight, bool directed)
+    {
+        if(!directed && b < a)
+            std::swap(a, b);
+        
+        this->a = a;
+        this->b = b;
+        this->weight = weight;
+    }
+
+    bool operator <(const SimpleEdge & e) const
+    {
+        return weight < e.weight;
+    }
+
+    bool operator ==(const SimpleEdge& e) const
+    {
+        if (a != e.a)
+            return false;
+        if (b != e.b)
+            return false;
+        return true;
+    }
+};
+
+/**
+ * @brief Kruskal's Minimum Spanning Tree
+ * 
+ * @return mst_edges Set of tree edges
+ */
+std::set<std::pair<int, int>>* Graph::MST_Kruskal()
+{
+    std::cout << "Arvore Geradora Minima de Kruskal" << std::endl;
+    
+    if (vertices.empty()) {
+        std::cerr << "No vertices in graph!" << std::endl;
+        return nullptr;
+    }
+
+    std::unordered_map<int, int> subsets;
+    std::list<SimpleEdge> sorted_edges;
+    std::set<std::pair<int, int>> *mst_edges = new std::set<std::pair<int, int>>;
+    int cost = 0;
+
+    // Create subsets ranging from 0 to n-1
+    int i = 0;
+    for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
+        subsets.insert({itV->second->getId(), i}); // Put each vertex in its subset
+        i++;
+
+        // Traverse the vertex's edges and add them to the list of edges
+        std::unordered_map<int, Edge*> edges = itV->second->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE) {
+            // Create a "simple edge" containing the origin vertex's id, the target vertex's id, and the edge weight
+            sorted_edges.push_back(SimpleEdge(itV->second->getId(), itE->second->getTargetId(), itE->second->getWeight(), this->directed));
+        }
+    }
+
+    sorted_edges.sort(); // Sort the edges in asceding order according to their weights
+    sorted_edges.unique(); // Remove duplicates (in undirected graph)
+    
+    i = 0;
+    while(i < order-1 && !sorted_edges.empty())
+    {
+        SimpleEdge e = sorted_edges.front(); // Get first edge in list
+        sorted_edges.pop_front(); // Pop edge from the list of edges
+
+        // Get the IDs of the subsets the vertices a and b are in
+        int smallest = subsets.at(e.a);
+        int greatest = subsets.at(e.b);
+        if(smallest != greatest)
+        {
+            std::cout << "(" << e.a << ", " << e.b << ") ";
+            mst_edges->insert(std::pair<int, int>(e.a, e.b));
+            cost += e.weight; // sum up the edge weight to the MST cost
+
+            if(greatest < smallest)
+                std::swap(smallest, greatest);
+            
+            // Merge the subsets (changing the greatest id to the smallest id)
+            for(std::unordered_map<int, int>::iterator it = subsets.begin(); it != subsets.end(); ++it) {
+                if(it->second == greatest)
+                    it->second = smallest;
+            }
+            i++;
+        }
+    }
+
+    std::cout << std::endl << "Custo: " << cost << std::endl;
+    return mst_edges;
+}
+
+/**
+ * @brief Print the vertices in order of visit according to the Breadth First Search algorithm. 
+ * Color legend:
+ * - White: unvisited
+ * - Gray: to visit
+ * - Black: visited
+ * 
+ * @param id ID of the starting vertex
+ * @param back_edges Set of back edges (will be overwritten)
+ * @return tree_edges Set of tree edges
+ */
+std::set<std::pair<int, int>>* Graph::BFS(int id, std::set<std::pair<int, int>>* back_edges)
+{
+    std::cout << "Caminhamento em largura:" << std::endl;
+
+    if (!searchVertex(id)) {
+        std::cerr << "Vertex not found!" << std::endl;
+        return nullptr;
+    }
+
+    // Set of tree edges (which will be printed in a different color in the .dot)
+    std::set<std::pair<int, int>>* tree_edges = new std::set<std::pair<int, int>>;
+
+    std::unordered_map<int, char> colored_vertices;
+    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+        colored_vertices.insert({it->second->getId(), 'w'}); // Insert as not visited (white)
+    }
+
+    colored_vertices.at(id) = 'g'; // Vertex v is the first to be visited (gray)
+
+    // Queue of vertices to visit
+    std::queue<int> toVisit;
+
+    // Enqueue current vertex and mark it as "to visit"
+    toVisit.push(id);
+
+    while(!toVisit.empty())
+    {
+        // Dequeue top vertex in queue
+        id = toVisit.front();
+        std::cout << id << " ";
+        toVisit.pop();
+
+        // Check for unvisited vertices in adjacency list and enqueue them
+        std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
+        {
+            int target_id = itE->second->getTargetId();
+
+            // If the target vertex is white, then it is unvisited
+            if(colored_vertices.at(target_id) == 'w')
+            {
+                std::pair<int, int> pair_vertices(id, target_id);
+                if(!this->directed && pair_vertices.second < pair_vertices.first)
+                    std::swap(pair_vertices.first, pair_vertices.second);
+                tree_edges->insert(pair_vertices);
+                colored_vertices.at(target_id) = 'g'; // mark it as "to visit"
+                toVisit.push(target_id);
+            }
+            else if(colored_vertices.at(target_id) == 'g')
+            {
+                std::pair<int, int> pair_vertices(id, target_id);
+                if(!this->directed && pair_vertices.second < pair_vertices.first)
+                    std::swap(pair_vertices.first, pair_vertices.second);
+                back_edges->insert(pair_vertices);
+            }
+        }
+
+        colored_vertices.at(id) = 'b'; // Mark current vertex as visited (black)
+    }
+    std::cout << std::endl;
+
+    return tree_edges;
+}
+
 /**
  * @brief Save the graph in .dot
  * 
  * @param outfile_name Name of the file to which the graph will be saved
  */
-void Graph::saveToDot(std::string outfile_name)
+void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges, 
+std::set<std::pair<int,int>> *dashed_edges)
 {
     std::ofstream outfile(outfile_name);
     std::string edgeop; // "->" or "--"
@@ -187,12 +355,9 @@ void Graph::saveToDot(std::string outfile_name)
             Edge *e = itE->second;
             
             // Create "edge" in which the smallest vertex comes first
-            int greatest = v->getId();
-            int smallest = e->getTargetId();
-            if(greatest < smallest)
-                std::swap(greatest, smallest);
-
-            std::pair<int,int> pair_vertices(smallest, greatest);
+            std::pair<int,int> pair_vertices(v->getId(), e->getTargetId());
+            if(!this->directed && pair_vertices.second < pair_vertices.first)
+                std::swap(pair_vertices.first, pair_vertices.second);
 
             // If this "edge" hasn't been included yet
             // Then mark as included and write it to the file
@@ -200,7 +365,17 @@ void Graph::saveToDot(std::string outfile_name)
                 included.insert(pair_vertices);
                 outfile << v->getId() << edgeop << e->getTargetId();
                 if(isWeightedEdge()) {
-                    outfile << " [weight=" << e->getWeight() << "]";
+                    outfile << " [weight=" << e->getWeight();
+                    if(red_edges != nullptr && red_edges->count(pair_vertices))
+                        outfile << " color=\"red\"";
+                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
+                        outfile << " style=\"dashed\"";
+                    outfile << "]";
+                } else { 
+                    if(red_edges != nullptr && red_edges->count(pair_vertices))
+                        outfile << " [color=\"red\"]";
+                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
+                        outfile << " [style=\"dashed\"]";
                 }
                 outfile << ";" << std::endl;
             }
@@ -326,88 +501,3 @@ void Graph::Dijkstra(int source_id, int target_id)
 
     delete [] pi;
 }
-
-/**
- * @brief Prints the vertices in order according to the Breadth First Search algorithm
- * 
- * @param id ID of the starting vertex
- */
-void Graph::BFS(int id)
-{
-    std::cout << "Caminhamento em largura:" << std::endl;
-    if (!searchVertex(id)) {
-        std::cerr << "Vertex not found!" << std::endl;
-        return;
-    }
-    
-    // Hash Set of visited vertices
-    std::unordered_set<int> visited;
- 
-    // Queue of vertices to visit
-    std::queue<int> toVisit;
- 
-    // Enqueue current vertex and add it to the visited vertices set
-    toVisit.push(id);
-    visited.insert(id);
- 
-    while(!toVisit.empty())
-    {
-        // Dequeue top vertex in queue
-        id = toVisit.front();
-        std::cout << id << " ";
-        toVisit.pop();
- 
-        // Check for unvisited vertices in adjacency list and enqueue them
-        std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
-        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
-        {
-            int target_id = itE->second->getTargetId();
-            if(!visited.count(target_id))
-            {
-                visited.insert(target_id);
-                toVisit.push(target_id);
-            }
-        }
-    }
-    std::cout << std::endl;
-}
-
-
-
-// //Function that prints a set of edges belongs breadth tree
-
-// void Graph::breadthFirstSearch(std::ofstream &output_file){
-    
-// }
-
-
-
-// float Graph::floydMarshall(int idSource, int idTarget){
-    
-// }
-
-   
-
-// float Graph::dijkstra(int idSource, int idTarget){
-    
-// }
-
-// //function that prints a topological sorting
-// void topologicalSorting(){
-
-// }
-
-// void breadthFirstSearch(std::ofstream& output_file){
-
-// }
-
-// Graph* getVertexInduced(int* listIdVertexs){
-
-// }
-
-// Graph* agmKuskal(){
-
-// }
-// Graph* agmPrim(){
-
-// }

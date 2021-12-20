@@ -1,10 +1,7 @@
 #ifndef GRAPH_H_INCLUDED
 #define GRAPH_H_INCLUDED
 
-// #include <fstream>
-// #include <stack>
-// #include <list>
-
+#include <set>
 #include <unordered_map>
 
 #include "Vertex.hpp"
@@ -47,28 +44,13 @@ class Graph
         bool searchVertex(int id);
 
         void printAdjList();
-        void saveToDot(std::string outfile_name);
         
         void Dijkstra(int source_id, int target_id);
-        void BFS(int id);
-        
-        
-    //     //methods phase1
+        std::set<std::pair<int, int>>* MST_Kruskal();
+        std::set<std::pair<int, int>>* BFS(int id, std::set<std::pair<int, int>>* back_edges);
 
-    //     void topologicalSorting();
-    //     void breadthFirstSearch(std::ofstream& output_file);
-    //     Graph* getVertexInduced(int* listIdVertexs);
-    //     Graph* agmKuskal();
-    //     Graph* agmPrim();
-    //     float floydMarshall(int idSource, int idTarget);
-
-    //     //methods phase1
-
-    //     float greed();
-    //     float greedRandom();
-    //     float greedRactiveRandom();
-    // private:
-    //     //Auxiliar methods
+        void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges = nullptr, 
+        std::set<std::pair<int,int>> *gray_edges = nullptr);
 
 };
 
