@@ -4,8 +4,9 @@
 #include <queue>
 #include <fstream>
 #include <set>
-// #include <stack>
+#include <stack>
 #include <list>
+#include <map>
 // #include <math.h>
 // #include <cstdlib>
 // #include <ctime>
@@ -380,6 +381,38 @@ void Graph::DFS(int id)
 
 }
 
+void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order)
+{
+
+    std::cout << id << " ";
+
+    // Iterator for adjacent list
+    std::unordered_map<int, Edge*>::iterator itE;
+
+    // Root vertex becomes gray
+    colors.at(id) = 1;
+
+    for (itE = vertices[id]->getEdges().begin(); itE != vertices[id]->getEdges().end(); ++itE){
+      
+        // gets ID of adjascent vertex
+        int target_id = itE->second->getTargetId();
+
+        if (colors.at(target_id) == 0){
+            // adjascent vertex unvisited
+            auxTopologicalSorting(target_id, colors, order);
+        } else if (colors.at(target_id) == 1) {
+            // graph has a return edge so can't have a topological sorting
+            std::cout << "Grafo não é um DAG! (grafo ciclico)" << std::endl;
+            return;
+        }
+
+    }
+
+    // Vertex is terminated -> color becomes black and is added to list
+    colors.at(id) = 2;
+    order.push_front(id);
+}
+
 /**
  * @brief Prints the topological sorting from a DAG (based on the Depth First Search algorithm)
  * 
@@ -396,53 +429,27 @@ void Graph::topologicalSorting(){
     std::unordered_map<int, Vertex*>::iterator it;
   
     // Map of the vertices Id and a color that indicates wether the vertice is unvisited (0 - white), being visited (1 - gray) or terminated (2 - black)
-    std::unordered_map<int, int> colors;
+    std::map<int, int> colors;
 
     // List of vertices sorted in topological order
     std::list<int> topologicalOrder;
 
     // Initially all vertices receive color white
     for (it = vertices.begin(); it != vertices.end(); ++it){
-        colors[it->first] = 0;
+        colors.insert({it->second->getId(), 0});
+        /* std::cout << colors.at(it->second->getId()); */
     }
- 
+
     // Loop through all unvisited vertices
     for (it = vertices.begin(); it != vertices.end(); ++it){
-      if (colors[it->first] == 0){
-          auxTopologicalSorting(it->first, colors, topologicalOrder);
-      }
-    }
-
-}
-
-void Graph::auxTopologicalSorting(int id, std::unordered_map<int, int> colors, std::list<int> order)
-{
-
-    // Iterator for adjacent list
-    std::unordered_map<int, Edge*>::iterator itE;
-
-    // Root vertex becomes gray
-    colors[id] = 1;
-
-    for (itE = vertices[id]->getEdges().begin(); itE != vertices[id]->getEdges().end(); ++itE){
-      
-        // gets ID of adjascent vertex
-        int target_id = itE->second->getTargetId();
-
-        if (colors[target_id] == 0){
-            // adjascent vertex unvisited
-            auxTopologicalSorting(target_id, colors, order);
-        } else if (colors[target_id] == 1) {
-            // graph has a return edge so can't have a topological sorting
-            std::cout << "Grafo não é um DAG! (grafo ciclico)" << std::endl;
-            return;
+        if (colors.at(it->second->getId()) == 0){
+            std::cout << it->second->getId() << " eh branco" << std::endl;
+            auxTopologicalSorting(it->second->getId(), colors, topologicalOrder);
         }
-
     }
 
-    // Vertex is terminated -> color becomes black and is added to list
-    colors[id] = 2;
-    order.push_front(id);
+    std::cout << std::endl;
+
 }
 
 // //Function that prints a set of edges belongs breadth tree

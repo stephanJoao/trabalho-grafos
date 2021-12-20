@@ -5,7 +5,7 @@
 // #include <stack>
 #include <list>
 
-#include <unordered_map>
+#include <map>
 
 #include "Vertex.hpp"
 
@@ -53,7 +53,7 @@ class Graph
         void BFS(int id);
         void DFS(int id);
         void topologicalSorting();
-        void auxTopologicalSorting(int id, std::unordered_map<int, int> colors, std::list<int> order);
+        void auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order);
         
     //     //methods phase1
 
