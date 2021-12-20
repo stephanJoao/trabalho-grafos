@@ -594,6 +594,8 @@ void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<
  * @brief Prints the topological sorting from a DAG (based on the Depth First Search algorithm)
  * @brief Calculates the smallest path between two vertices using Floyd's algorithm
  //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
+ * @brief Calculates the smallest path between two vertices using Floyd's algorithm
+ //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
  * 
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
