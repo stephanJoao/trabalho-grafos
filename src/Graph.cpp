@@ -5,7 +5,7 @@
 #include <fstream>
 #include <set>
 // #include <stack>
-// #include <list>
+#include <list>
 // #include <math.h>
 // #include <cstdlib>
 // #include <ctime>
@@ -388,29 +388,61 @@ void Graph::topologicalSorting(){
 
     std::cout << "Ordenação topológica do grafo:" << std::endl;
     if (!this->directed) {
-        std::cout << "Grafo não é um DAG!" << std::endl;
+        std::cout << "Grafo não é um DAG! (não direcionado)" << std::endl;
         return;
     }
 
-    // Hash Set of visited vertices
-    std::unordered_set<int> visited;
+    // Iterator for list of vertices
+    std::unordered_map<int, Vertex*>::iterator it;
+  
+    // Map of the vertices Id and a color that indicates wether the vertice is unvisited (0 - white), being visited (1 - gray) or terminated (2 - black)
+    std::unordered_map<int, int> colors;
+
+    // List of vertices sorted in topological order
+    std::list<int> topologicalOrder;
+
+    // Initially all vertices receive color white
+    for (it = vertices.begin(); it != vertices.end(); ++it){
+        colors[it->first] = 0;
+    }
  
     // Loop through all unvisited vertices
-    for (int i = 0; i < this->order; i++){
-
-      if (!visited.count(i)) {
-          auxTopologicalSorting(i, &visited);
+    for (it = vertices.begin(); it != vertices.end(); ++it){
+      if (colors[it->first] == 0){
+          auxTopologicalSorting(it->first, colors, topologicalOrder);
       }
-
     }
 
 }
 
-void auxTopologicalSorting(int id, std::unordered_set<int>* visited)
+void Graph::auxTopologicalSorting(int id, std::unordered_map<int, int> colors, std::list<int> order)
 {
 
-    
+    // Iterator for adjacent list
+    std::unordered_map<int, Edge*>::iterator itE;
 
+    // Root vertex becomes gray
+    colors[id] = 1;
+
+    for (itE = vertices[id]->getEdges().begin(); itE != vertices[id]->getEdges().end(); ++itE){
+      
+        // gets ID of adjascent vertex
+        int target_id = itE->second->getTargetId();
+
+        if (colors[target_id] == 0){
+            // adjascent vertex unvisited
+            auxTopologicalSorting(target_id, colors, order);
+        } else if (colors[target_id] == 1) {
+            // graph has a return edge so can't have a topological sorting
+            std::cout << "Grafo não é um DAG! (grafo ciclico)" << std::endl;
+            return;
+        }
+
+    }
+
+    // Vertex is terminated -> color becomes black and is added to list
+    colors[id] = 2;
+    order.push_front(id);
 }
 
 // //Function that prints a set of edges belongs breadth tree
