@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 
 #include "include/Graph.hpp"
 
@@ -17,43 +18,39 @@ Graph* readGraph(ifstream& input_file, bool directed, bool weighted_edge, bool w
     Graph *graph = new Graph(order, directed, weighted_edge, weighted_vertex);
     //Leitura de arquivo
 
-    if(!graph->isWeightedEdge() && !graph->isWeightedVertex()){
-
-        while(input_file >> idNodeSource >> idNodeTarget) {
-
+    if(!graph->isWeightedEdge() && !graph->isWeightedVertex())
+    {
+        while(input_file >> idNodeSource >> idNodeTarget)
+        {
             graph->insertEdge(idNodeSource, idNodeTarget);
-
         }
-
-    } else if(graph->isWeightedEdge() && !graph->isWeightedVertex() ){
-
+    } 
+    else if(graph->isWeightedEdge() && !graph->isWeightedVertex() )
+    {
         float edgeWeight;
 
-        while(input_file >> idNodeSource >> idNodeTarget >> edgeWeight) {
-
+        while(input_file >> idNodeSource >> idNodeTarget >> edgeWeight)
+        {
             graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight);
-
         }
-
-    } else if(graph->isWeightedVertex() && !graph->isWeightedEdge()){
-
+    } 
+    else if(graph->isWeightedVertex() && !graph->isWeightedEdge())
+    {
         float nodeSourceWeight, nodeTargetWeight;
 
-        while(input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight) {
-
+        while(input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight) 
+        {
             graph->insertEdge(idNodeSource, idNodeTarget, 1, nodeSourceWeight, nodeTargetWeight);
-
         }
-
-    } else {
-
+    } 
+    else 
+    {
         float nodeSourceWeight, nodeTargetWeight, edgeWeight;
 
-        while(input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight) {
-
+        while(input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight) 
+        {
             graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight, nodeSourceWeight, nodeTargetWeight);
         }
-
     }
 
     return graph;
@@ -81,52 +78,45 @@ int main(int argc, char const *argv[])
     std::cout << "Weighted vertex: " << weighted_vertex << std::endl;
 
 
-    // Read of input_file
-    ifstream input_file;
-    input_file.open(input_file_name, ios::in);
+    // // Read of input_file
+    // ifstream input_file;
+    // input_file.open(input_file_name, ios::in);
 
-    Graph *g;
-    if(input_file.is_open()){
+    // Graph *g;
+    // if(input_file.is_open()){
 
-        g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+    //     g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
 
-    } else {
-        cout << "Unable to open " << input_file_name << std::endl;
-        exit(1);
-    }
-
-    // // leitura do arquivo de saida
-    // ofstream output_file;
-    // output_file.open(output_file_name, ios::out);
-
-    // cout << "Hello World!!!" << endl;
-    // Graph *g = new Graph(0);
-    // g->insertEdge(1, 2);
-    // g->insertEdge(1, 3);
-    // g->insertEdge(1, 4);
-    // g->insertEdge(2, 3);
+    // } else {
+    //     cout << "Unable to open " << input_file_name << std::endl;
+    //     exit(1);
+    // }
     
-    // Graph *g = new Graph(0, false, true, false);
-    // g->insertEdge(1, 2, 5);
-    // g->insertEdge(1, 3, 8);
-    // g->insertEdge(1, 6, 7);
-    // g->insertEdge(1, 8, 6);
-    // g->insertEdge(2, 3, 4);
-    // g->insertEdge(2, 4, 8);
-    // g->insertEdge(2, 5, 7);
-    // g->insertEdge(2, 8, 9);
-    // g->insertEdge(3, 5, 4);
-    // g->insertEdge(3, 6, 5);
-    // g->insertEdge(4, 5, 9);
-    // g->insertEdge(4, 7, 4);
-    // g->insertEdge(5, 6, 3);
-    // g->insertEdge(5, 7, 10);
-    // g->insertEdge(6, 7, 6);
+    // delete g;
+    Graph* g = new Graph(7, true, true, false);
+    g->insertEdge(0, 1, 4);
+    g->insertEdge(0, 2, 2);
+    g->insertEdge(1, 2, -3);
+    g->insertEdge(1, 3, 1);
+    g->insertEdge(1, 4, 3);
+    g->insertEdge(2, 4, 2);
+    g->insertEdge(2, 3, 3);
+    g->insertEdge(3, 4, -2);
+    g->insertEdge(3, 6, 4);
+    g->insertEdge(4, 5, 3);
+    g->insertEdge(4, 6, 3);
+    g->insertEdge(5, 6, 1);
+
+    // g->getInfo();
 
     // g->printAdjList();
     // g->BFS(1);
-    g->saveToDot("graph1.dot");
-    g->Dijkstra(0, 1);
+    // g->saveToDot("graph1.dot");
+    // g->saveToDot("graph1.dot");
+    
+    g->Dijkstra(1, 2);
+    // g->Floyd(1, 2);
     delete g;
+
     return 0;
 }

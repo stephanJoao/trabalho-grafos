@@ -41,15 +41,16 @@ class Graph
         //Other methods
 
         void insertVertex(int id, float weight = 1);
-        void insertEdge(int id, int target_id, float edge_weight = 1, 
-                        float source_vertex_weight = 1, float target_vertex_weight = 1);
+        void insertEdge(int id, int target_id, float edge_weight = 1, float source_vertex_weight = 1, float target_vertex_weight = 1);
         // void removeVertex(int id);
         bool searchVertex(int id);
+        void getInfo();
 
         void printAdjList();
         void saveToDot(std::string outfile_name);
         
         void Dijkstra(int source_id, int target_id);
+        void Floyd(int source_id, int target_id);
         void BFS(int id);
         
         
