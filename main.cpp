@@ -100,7 +100,7 @@ int main(int argc, char const *argv[])
     // output_file.open(output_file_name, ios::out);
 
     // cout << "Hello World!!!" << endl;
-    // Graph *g = new Graph(0);
+    // Graph *g = new Graph(4);
     // g->insertEdge(1, 2);
     // g->insertEdge(1, 3);
     // g->insertEdge(1, 4);
@@ -119,5 +119,7 @@ int main(int argc, char const *argv[])
     // g->Dijkstra(0, 1);
     g->topologicalSorting();
     delete g;
+
+    input_file.close();
     return 0;
 }
