@@ -6,6 +6,7 @@
 // #include <list>
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Vertex.hpp"
 
@@ -51,7 +52,9 @@ class Graph
         
         void Dijkstra(int source_id, int target_id);
         void BFS(int id);
-        
+        void DFS(int id);
+        void topologicalSorting();
+        void auxTopologicalSorting(int id, std::unordered_set<int>* visited);
         
     //     //methods phase1
 

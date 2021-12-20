@@ -370,7 +370,48 @@ void Graph::BFS(int id)
     std::cout << std::endl;
 }
 
+/**
+ * @brief Prints the vertices in order according to the Depth First Search algorithm
+ * 
+ * @param id ID of the starting vertex
+ */
+void Graph::DFS(int id)
+{
 
+}
+
+/**
+ * @brief Prints the topological sorting from a DAG (based on the Depth First Search algorithm)
+ * 
+ */
+void Graph::topologicalSorting(){
+
+    std::cout << "Ordenação topológica do grafo:" << std::endl;
+    if (!this->directed) {
+        std::cout << "Grafo não é um DAG!" << std::endl;
+        return;
+    }
+
+    // Hash Set of visited vertices
+    std::unordered_set<int> visited;
+ 
+    // Loop through all unvisited vertices
+    for (int i = 0; i < this->order; i++){
+
+      if (!visited.count(i)) {
+          auxTopologicalSorting(i, &visited);
+      }
+
+    }
+
+}
+
+void auxTopologicalSorting(int id, std::unordered_set<int>* visited)
+{
+
+    
+
+}
 
 // //Function that prints a set of edges belongs breadth tree
 
