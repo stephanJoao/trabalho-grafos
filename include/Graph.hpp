@@ -43,10 +43,10 @@ class Graph
         //Other methods
 
         void insertVertex(int id, float weight = 1);
-        void insertEdge(int id, int target_id, float edge_weight = 1, 
-                        float source_vertex_weight = 1, float target_vertex_weight = 1);
+        void insertEdge(int id, int target_id, float edge_weight = 1, float source_vertex_weight = 1, float target_vertex_weight = 1);
         // void removeVertex(int id);
         bool searchVertex(int id);
+        void getInfo();
 
         void printAdjList();
         
@@ -57,6 +57,26 @@ class Graph
         void auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order);
         void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges = nullptr, 
         std::set<std::pair<int,int>> *gray_edges = nullptr);
+        void Floyd(int source_id, int target_id);
+        void BFS(int id);
+        
+        
+    //     //methods phase1
+
+    //     void topologicalSorting();
+    //     void breadthFirstSearch(std::ofstream& output_file);
+    //     Graph* getVertexInduced(int* listIdVertexs);
+    //     Graph* agmKuskal();
+    //     Graph* agmPrim();
+    //     float floydMarshall(int idSource, int idTarget);
+
+    //     //methods phase1
+
+    //     float greed();
+    //     float greedRandom();
+    //     float greedRactiveRandom();
+    // private:
+    //     //Auxiliar methods
 
 };
 
