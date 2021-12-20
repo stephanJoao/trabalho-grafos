@@ -124,13 +124,13 @@ int main(int argc, char const *argv[]) {
     // g->insertEdge(5, 7, 10);
     // g->insertEdge(6, 7, 6);
 
-    // g->printAdjList();
-    // std::set<std::pair<int, int>> *mst_edges = g->MST_Kruskal();
-    // g->saveToDot("mst_kruskal.dot", mst_edges);
+    g->printAdjList();
+    std::set<std::pair<int, int>> *mst_edges = g->MST_Kruskal();
+    g->saveToDot("mst_kruskal.dot", mst_edges);
 
-    // std::set<std::pair<int, int>> *back_edges = new std::set<std::pair<int, int>>;
-    // std::set<std::pair<int, int>> *tree_edges = g->BFS(1, back_edges);
-    // g->saveToDot("bfs_tree.dot", tree_edges, back_edges);
+    std::set<std::pair<int, int>> *back_edges = new std::set<std::pair<int, int>>;
+    std::set<std::pair<int, int>> *tree_edges = g->BFS(1, back_edges);
+    g->saveToDot("bfs_tree.dot", tree_edges, back_edges);
 
     delete g;
 

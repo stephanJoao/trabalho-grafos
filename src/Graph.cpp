@@ -169,7 +169,7 @@ struct SimpleEdge
         return weight < e.weight;
     }
 
-    bool operator==(const SimpleEdge& e) const
+    bool operator ==(const SimpleEdge& e) const
     {
         if (a != e.a)
             return false;
@@ -178,11 +178,6 @@ struct SimpleEdge
         return true;
     }
 };
-
-inline bool operator<(const SimpleEdge& e1, const SimpleEdge& e2)
-{
-    return e1.a < e2.a;
-}
 
 /**
  * @brief Kruskal's Minimum Spanning Tree
@@ -203,36 +198,42 @@ std::set<std::pair<int, int>>* Graph::MST_Kruskal()
     std::set<std::pair<int, int>> *mst_edges = new std::set<std::pair<int, int>>;
     int cost = 0;
 
+    // Create subsets ranging from 0 to n-1
     int i = 0;
     for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
-        subsets.insert({itV->second->getId(), i});
+        subsets.insert({itV->second->getId(), i}); // Put each vertex in its subset
         i++;
 
+        // Traverse the vertex's edges and add them to the list of edges
         std::unordered_map<int, Edge*> edges = itV->second->getEdges();
         for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE) {
-            sorted_edges.push_back(SimpleEdge(itV->second->getId(), itE->second->getTargetId(), itE->second->getWeight(), directed));
+            // Create a "simple edge" containing the origin vertex's id, the target vertex's id, and the edge weight
+            sorted_edges.push_back(SimpleEdge(itV->second->getId(), itE->second->getTargetId(), itE->second->getWeight(), this->directed));
         }
     }
 
-    sorted_edges.sort();
-    sorted_edges.unique();
+    sorted_edges.sort(); // Sort the edges in asceding order according to their weights
+    sorted_edges.unique(); // Remove duplicates (in undirected graph)
     
     i = 0;
     while(i < order-1 && !sorted_edges.empty())
     {
-        SimpleEdge e = sorted_edges.front();
-        sorted_edges.pop_front();
+        SimpleEdge e = sorted_edges.front(); // Get first edge in list
+        sorted_edges.pop_front(); // Pop edge from the list of edges
 
+        // Get the IDs of the subsets the vertices a and b are in
         int smallest = subsets.at(e.a);
         int greatest = subsets.at(e.b);
         if(smallest != greatest)
         {
+            std::cout << "(" << e.a << ", " << e.b << ") ";
             mst_edges->insert(std::pair<int, int>(e.a, e.b));
-            cost += e.weight;
+            cost += e.weight; // sum up the edge weight to the MST cost
 
             if(greatest < smallest)
                 std::swap(smallest, greatest);
             
+            // Merge the subsets (changing the greatest id to the smallest id)
             for(std::unordered_map<int, int>::iterator it = subsets.begin(); it != subsets.end(); ++it) {
                 if(it->second == greatest)
                     it->second = smallest;
@@ -241,7 +242,7 @@ std::set<std::pair<int, int>>* Graph::MST_Kruskal()
         }
     }
 
-    std::cout << "Custo: " << cost << std::endl;
+    std::cout << std::endl << "Custo: " << cost << std::endl;
     return mst_edges;
 }
 
@@ -270,7 +271,7 @@ std::set<std::pair<int, int>>* Graph::BFS(int id, std::set<std::pair<int, int>>*
 
     std::unordered_map<int, char> colored_vertices;
     for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
-        colored_vertices.insert({it->second->getId(), 'w'}); // Insert as not visited vertex (white)
+        colored_vertices.insert({it->second->getId(), 'w'}); // Insert as not visited (white)
     }
 
     colored_vertices.at(id) = 'g'; // Vertex v is the first to be visited (gray)
@@ -293,19 +294,21 @@ std::set<std::pair<int, int>>* Graph::BFS(int id, std::set<std::pair<int, int>>*
         for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
         {
             int target_id = itE->second->getTargetId();
+
+            // If the target vertex is white, then it is unvisited
             if(colored_vertices.at(target_id) == 'w')
             {
                 std::pair<int, int> pair_vertices(id, target_id);
-                if(pair_vertices.second < pair_vertices.first)
+                if(!this->directed && pair_vertices.second < pair_vertices.first)
                     std::swap(pair_vertices.first, pair_vertices.second);
                 tree_edges->insert(pair_vertices);
-                colored_vertices.at(target_id) = 'g';
+                colored_vertices.at(target_id) = 'g'; // mark it as "to visit"
                 toVisit.push(target_id);
             }
             else if(colored_vertices.at(target_id) == 'g')
             {
                 std::pair<int, int> pair_vertices(id, target_id);
-                if(pair_vertices.second < pair_vertices.first)
+                if(!this->directed && pair_vertices.second < pair_vertices.first)
                     std::swap(pair_vertices.first, pair_vertices.second);
                 back_edges->insert(pair_vertices);
             }
@@ -360,7 +363,7 @@ std::set<std::pair<int,int>> *dashed_edges)
             
             // Create "edge" in which the smallest vertex comes first
             std::pair<int,int> pair_vertices(v->getId(), e->getTargetId());
-            if(pair_vertices.second < pair_vertices.first)
+            if(!this->directed && pair_vertices.second < pair_vertices.first)
                 std::swap(pair_vertices.first, pair_vertices.second);
 
             // If this "edge" hasn't been included yet
