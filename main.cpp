@@ -78,95 +78,37 @@ int main(int argc, char const *argv[])
     std::cout << "Weighted vertex: " << weighted_vertex << std::endl;
 
 
-    // // Read of input_file
+    // Read of input_file
     ifstream input_file;
     input_file.open(input_file_name, ios::in);
 
+    Graph *g;
+    if(input_file.is_open())
+    {
+        g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+    }
     cout << "Hello World!!!" << endl;
-    Graph *g = new Graph(4);
-    g->insertEdge(1, 2);
-    g->insertEdge(1, 3);
-    g->insertEdge(1, 4);
-    g->insertEdge(2, 3);
-    
-    g = new Graph(8, false, true, false);
-    // g->insertEdge(1, 2, 5);
-    // g->insertEdge(1, 3, 8);
-    // g->insertEdge(1, 6, 7);
-    // g->insertEdge(1, 8, 6);
-    // g->insertEdge(2, 3, 4);
-    // g->insertEdge(2, 4, 8);
-    // g->insertEdge(2, 5, 7);
-    // g->insertEdge(2, 8, 9);
-    // g->insertEdge(3, 5, 4);
-    // g->insertEdge(3, 6, 5);
-    // g->insertEdge(4, 5, 9);
-    // g->insertEdge(4, 7, 4);
-    // g->insertEdge(5, 6, 3);
-    // g->insertEdge(5, 7, 10);
-    // g->insertEdge(6, 7, 6);
-    // Graph *g;
-    // if(input_file.is_open()){
-
-    //     g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
-
-    // } else {
-    //     cout << "Unable to open " << input_file_name << std::endl;
-    //     exit(1);
-    // }
     
     // delete g;
-    Graph* g = new Graph(7, true, true, false);
-    g->insertEdge(0, 1, 4);
-    g->insertEdge(0, 2, 2);
-    g->insertEdge(1, 2, -3);
-    g->insertEdge(1, 3, 1);
-    g->insertEdge(1, 4, 3);
-    g->insertEdge(2, 4, 2);
-    g->insertEdge(2, 3, 3);
-    g->insertEdge(3, 4, -2);
-    g->insertEdge(3, 6, 4);
-    g->insertEdge(4, 5, 3);
-    g->insertEdge(4, 6, 3);
-    g->insertEdge(5, 6, 1);
-
-    // g->getInfo();
-
-    // g->printAdjList();
-    // g->saveToDot("graph1.dot");
-    // g->Dijkstra(0, 1);
-
-    std::set<std::pair<int, int>> *mst_edges = g->MST_Kruskal();
-    g->saveToDot("mst_kruskal.dot", mst_edges);
-
-    std::set<std::pair<int, int>> *back_edges = new std::set<std::pair<int, int>>;
-    std::set<std::pair<int, int>> *tree_edges = g->BFS(1, back_edges);
-    g->saveToDot("bfs_tree.dot", tree_edges, back_edges);
-
-    g->topologicalSorting();
-
-    delete g;
-
-    input_file.close();
-    // } else {
-    //     cout << "Unable to open " << input_file_name << std::endl;
-    //     exit(1);
-    // }
-    
-    // delete g;
-    Graph* g = new Graph(7, true, true, false);
-    g->insertEdge(0, 1, 4);
-    g->insertEdge(0, 2, 2);
-    g->insertEdge(1, 2, -3);
-    g->insertEdge(1, 3, 1);
-    g->insertEdge(1, 4, 3);
-    g->insertEdge(2, 4, 2);
-    g->insertEdge(2, 3, 3);
-    g->insertEdge(3, 4, -2);
-    g->insertEdge(3, 6, 4);
-    g->insertEdge(4, 5, 3);
-    g->insertEdge(4, 6, 3);
-    g->insertEdge(5, 6, 1);
+    // Graph* g = new Graph(7, true, true, false);
+    // g->insertEdge(0, 1, 4);
+    // g->insertEdge(0, 2, 2);
+    // g->insertEdge(1, 2, -3);
+    // g->insertEdge(1, 3, 1);
+    // g->insertEdge(1, 4, 3);
+    // g->insertEdge(2, 4, 2);
+    // g->insertEdge(2, 3, 3);
+    // g->insertEdge(3, 4, -2);
+    // g->insertEdge(3, 6, 4);
+    // g->insertEdge(4, 5, 3);
+    // g->insertEdge(4, 6, 3);
+    // g->insertEdge(5, 6, 1);
+    // Graph* g = new Graph(3, true, true, false);
+    // g->insertEdge(0, 1, 4);
+    // g->insertEdge(0, 2, 11);
+    // g->insertEdge(1, 0, 6);
+    // g->insertEdge(1, 2, 2);
+    // g->insertEdge(2, 0, 3);
 
     // g->getInfo();
 
@@ -175,9 +117,14 @@ int main(int argc, char const *argv[])
     // g->saveToDot("graph1.dot");
     // g->saveToDot("graph1.dot");
     
-    g->Dijkstra(1, 2);
-    // g->Floyd(1, 2);
-    delete g;
+    g->Dijkstra(0, 2);
+    g->Floyd(0, 2);
+    // delete g;
+
+    // unordered_map<int, int*> mapa;
+    // mapa.insert({0, new int(1)});
+    // mapa.insert({1, new int(2)});
+    // cout << mapa[50] << endl;
 
     return 0;
 }
