@@ -70,10 +70,10 @@ bool Vertex::searchEdge(int target_id)
  */
 void Vertex::insertEdge(int target_id, float weight) 
 {
-    // if(edges[target_id] == nullptr) {
+    if(edges.count(target_id) == 0) {
         Edge* e = new Edge(target_id, weight);
         edges.insert({target_id, e});
-    // }
+    }
 }
 
 /**

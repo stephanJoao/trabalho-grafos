@@ -119,7 +119,7 @@ int main(int argc, char const *argv[])
     
     g->Dijkstra(0, 2);
     g->Floyd(0, 2);
-    // delete g;
+    delete g;
 
     // unordered_map<int, int*> mapa;
     // mapa.insert({0, new int(1)});
