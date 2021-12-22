@@ -458,24 +458,18 @@ bool Graph::Dijkstra(int source_id, int target_id)
     int n = vertices.size();
 
     // Initializes non iterated vertices
-    //*std::cout << "Initializes non iterated vertices" << std::endl;
     std::vector<int> non_iterated;
     for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
         Vertex *v = it->second;
         if(v->getId() != source_id)
             non_iterated.push_back(v->getId());
-        if(v->getId() == 0)
-            std::cout << "0 poraaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
-        //std::cout << v->getId() << std::endl;
     }
     
     // Initializes iterated vertices
-    //*std::cout << "Initializes iterated vertices" << std::endl;
     std::vector<int> iterated;
     iterated.push_back(source_id);
 
     // Initializes vector of lengths and paths (called pi)
-    //*std::cout << "Initializes pi" << std::endl;    
     std::unordered_map<int, Length> pi;
     for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
         Vertex *v = it->second;
@@ -498,22 +492,8 @@ bool Graph::Dijkstra(int source_id, int target_id)
         pi[e->getTargetId()].path.push_back(e->getTargetId());
     }
 
-    int cont = 0;
-
     // Algorithm
-    //*std::cout << "Inicia algoritmo" << std::endl;
     while(non_iterated.size() > 0) {
-        //*std::cout << "Chegou aqui?" << std::endl;
-        //*for(int i = 0; i < non_iterated.size(); i++) 
-        //*    std::cout << non_iterated[i] << " ";
-        //*std::cout << "\nPI: ";
-        //*for(int i = 0; i < vertices.size(); i++) 
-        //*    std::cout << pi[i].length << " ";
-        //*std::cout << "\n";
-        
-        cont++;
-        std::cout << cont << std::endl;
-
         // Find j with minimal path cost in non_iterated
         int j = 0;
         int j_length = std::numeric_limits<int>::max();
@@ -526,12 +506,9 @@ bool Graph::Dijkstra(int source_id, int target_id)
             }
         }
         // Removes this j from the non_iterated
-        //*std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
         non_iterated.erase(non_iterated.begin() + j);
-        //*std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
 
         // Iterate through j adjacencies
-        //std::cout << "j_id: " << j_id << std::endl;
         std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
         for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
             Edge *e = it->second;
@@ -554,40 +531,30 @@ bool Graph::Dijkstra(int source_id, int target_id)
                 if(!non)
                     non_iterated.push_back(e->getTargetId());
             }
-            //*std::cout << "Iteratin' through j vertices" << std::endl;
         }
-        //*std::cout << "Iterated through j vertices" << std::endl;
     }
-
-    /**
-    for(int i = 0; i < n; i++) {
-        std::cout << pi[i].length << " ";
-    }
-    std::cout << "\n";
-    
-    for(int j = 0; j < n; j++)
-    {
-        if(pi[j].path.size() == 0)
-            std::cout << "Caminho vazio";
-        for(int i = 0; i < pi[j].path.size(); i++) {
-            std::cout << pi[j].path[i] << " ";
-        }
-        std::cout << "\n";
-    }
-    */
 
     std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
     if(pi[target_id].path.size() > 0) {
+        std::cout << "  Path found by Dijkstra:" << std::endl;
+        std::cout << "      {";
         for(int i = 0; i < pi[target_id].path.size() - 1; i++){
             int x = pi[target_id].path[i], y = pi[target_id].path[i];
-            if(pi[target_id].path[i] < pi[target_id].path[i + 1])
+            if(pi[target_id].path[i] < pi[target_id].path[i + 1]) {
                 y = pi[target_id].path[i + 1];
-            else
+                std::cout << "(" << x << ", " << y << ")";
+            }
+            else{
                 x = pi[target_id].path[i + 1];
-            std::cout << "{ " << x << ", " << y << "}" << std::endl;
+                std::cout << "(" << y << ", " << x << ")";
+            }
+            if(i < pi[target_id].path.size() - 2)
+                std::cout << ", ";
             path->insert({x, y});
         }
+        std::cout << "}" << std::endl;
     }
+    //TODO Salvar arquivo baseado no nome fornecido na execução
     saveToDot("dijkstra.dot", path);
     delete path;
 
