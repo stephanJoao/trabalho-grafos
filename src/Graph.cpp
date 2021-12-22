@@ -7,6 +7,7 @@
 #include <stack>
 #include <list>
 #include <map>
+#include <string>
 
 #include "../include/Graph.hpp"
 #include "../include/Vertex.hpp"
@@ -130,6 +131,17 @@ void Graph::insertEdge(int id, int target_id, float edge_weight, float source_ve
         //         std::cout << "Edge already present" << std::endl;
         // }
         vertices[target_id]->insertEdge(id, edge_weight);
+    }
+}
+
+
+/**
+ * @brief Insert missing vertices considering the graph having vertices from 0 to n - 1.
+ */
+void Graph::insertMissingVertices() {
+    for(int i = 0; i < order; i++) {
+        if(vertices.count(i) == 0)
+            insertVertex(i);
     }
 }
 
@@ -435,34 +447,49 @@ typedef struct
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
  */
-void Graph::Dijkstra(int source_id, int target_id)
+bool Graph::Dijkstra(int source_id, int target_id)
 {
-    //TODO verificação da existência dos nós
+    // Verifies if the vertices exist in the graph (returns false -> not executed)
+    if(vertices.count(source_id) == 0 || vertices.count(target_id) == 0) {
+        std::cout << "ERROR: Dijkstra not executed, one or both of the vertices are not present in the graph" << std::endl;
+        return false;
+    }
     
     int n = vertices.size();
 
     // Initializes non iterated vertices
-    //std::cout << "Initializes non iterated vertices" << std::endl;
+    //*std::cout << "Initializes non iterated vertices" << std::endl;
     std::vector<int> non_iterated;
     for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
         Vertex *v = it->second;
         if(v->getId() != source_id)
             non_iterated.push_back(v->getId());
+        if(v->getId() == 0)
+            std::cout << "0 poraaaaaaaaaaaaaaaaaaaaaaa" << std::endl;
+        //std::cout << v->getId() << std::endl;
     }
     
     // Initializes iterated vertices
-    //std::cout << "Initializes iterated vertices" << std::endl;
+    //*std::cout << "Initializes iterated vertices" << std::endl;
     std::vector<int> iterated;
     iterated.push_back(source_id);
 
     // Initializes vector of lengths and paths (called pi)
-    //std::cout << "Initializes pi" << std::endl;    
-    Length *pi = new Length[n];
-    //std::cout << "n = " << order+1 << std::endl;
-    for(int i = 0; i < n; i++) {
-        pi[i].length = std::numeric_limits<int>::max();
+    //*std::cout << "Initializes pi" << std::endl;    
+    std::unordered_map<int, Length> pi;
+    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+        Vertex *v = it->second;
+        if(v->getId() == source_id) {
+            Length l;
+            l.length = 0;
+            pi.insert({v->getId(), l});
+        }
+        else {
+            Length l;
+            l.length = std::numeric_limits<int>::max();
+            pi.insert({v->getId(), l});
+        }
     }
-    pi[source_id].length = 0;
     std::unordered_map<int, Edge*> edges = vertices[source_id]->getEdges();
     for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
         Edge *e = it->second;
@@ -471,17 +498,22 @@ void Graph::Dijkstra(int source_id, int target_id)
         pi[e->getTargetId()].path.push_back(e->getTargetId());
     }
 
-    // std::cout << "Inicia algoritmo" << std::endl;
+    int cont = 0;
+
     // Algorithm
+    //*std::cout << "Inicia algoritmo" << std::endl;
     while(non_iterated.size() > 0) {
-        // std::cout << "Chegou aqui?" << std::endl;
-        // for(int i = 0; i < non_iterated.size(); i++) 
-        //     std::cout << non_iterated[i] << " ";
-        // std::cout << "\nPI: ";
-        // for(int i = 0; i < vertices.size(); i++) 
-        //     std::cout << pi[i].length << " ";
-        // std::cout << "\n";
+        //*std::cout << "Chegou aqui?" << std::endl;
+        //*for(int i = 0; i < non_iterated.size(); i++) 
+        //*    std::cout << non_iterated[i] << " ";
+        //*std::cout << "\nPI: ";
+        //*for(int i = 0; i < vertices.size(); i++) 
+        //*    std::cout << pi[i].length << " ";
+        //*std::cout << "\n";
         
+        cont++;
+        std::cout << cont << std::endl;
+
         // Find j with minimal path cost in non_iterated
         int j = 0;
         int j_length = std::numeric_limits<int>::max();
@@ -494,11 +526,12 @@ void Graph::Dijkstra(int source_id, int target_id)
             }
         }
         // Removes this j from the non_iterated
-        // std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
+        //*std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
         non_iterated.erase(non_iterated.begin() + j);
-        // std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
+        //*std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
 
         // Iterate through j adjacencies
+        //std::cout << "j_id: " << j_id << std::endl;
         std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
         for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
             Edge *e = it->second;
@@ -521,25 +554,27 @@ void Graph::Dijkstra(int source_id, int target_id)
                 if(!non)
                     non_iterated.push_back(e->getTargetId());
             }
-            // std::cout << "Iteratin' through j vertices" << std::endl;
+            //*std::cout << "Iteratin' through j vertices" << std::endl;
         }
-        // std::cout << "Iterated through j vertices" << std::endl;
+        //*std::cout << "Iterated through j vertices" << std::endl;
     }
 
-    // for(int i = 0; i < n; i++) {
-    //     std::cout << pi[i].length << " ";
-    // }
-    // std::cout << "\n";
+    /**
+    for(int i = 0; i < n; i++) {
+        std::cout << pi[i].length << " ";
+    }
+    std::cout << "\n";
     
-    // for(int j = 0; j < n; j++)
-    // {
-    //     if(pi[j].path.size() == 0)
-    //         std::cout << "Caminho vazio";
-    //     for(int i = 0; i < pi[j].path.size(); i++) {
-    //         std::cout << pi[j].path[i] << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
+    for(int j = 0; j < n; j++)
+    {
+        if(pi[j].path.size() == 0)
+            std::cout << "Caminho vazio";
+        for(int i = 0; i < pi[j].path.size(); i++) {
+            std::cout << pi[j].path[i] << " ";
+        }
+        std::cout << "\n";
+    }
+    */
 
     std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
     if(pi[target_id].path.size() > 0) {
@@ -555,7 +590,8 @@ void Graph::Dijkstra(int source_id, int target_id)
     }
     saveToDot("dijkstra.dot", path);
     delete path;
-    delete [] pi;
+
+    return true;
 }
 
 void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order)
@@ -619,8 +655,8 @@ void Graph::Floyd(int source_id, int target_id)
                         A[i][j].length = std::numeric_limits<int>::max();
                     else {
                         A[i][j].length = vertices[i]->getEdges()[j]->getWeight(); 
-                        A[i][j].path.push_back(i);
-                        A[i][j].path.push_back(j);
+                        //A[i][j].path.push_back(i);
+                        //A[i][j].path.push_back(j);
                     }                
                 }
             }
@@ -643,7 +679,7 @@ void Graph::Floyd(int source_id, int target_id)
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
                 A_previous[i][j].length = A[i][j].length;
-                A_previous[i][j].path = A[i][j].path;
+                //A_previous[i][j].path = A[i][j].path;
             }
         }
         for(int i = 0; i < n; i++) {
@@ -656,9 +692,9 @@ void Graph::Floyd(int source_id, int target_id)
                         A_aux = std::numeric_limits<int>::max();
                     if(A_previous[i][j].length > A_aux) {
                         A[i][j].length = A_aux;
-                        A[i][j].path = A_previous[i][k].path;
-                        for(int l = 1; l < A_previous[k][j].path.size(); l++)
-                            A[i][j].path.push_back(A_previous[k][j].path[l]);
+                        // A[i][j].path = A_previous[i][k].path;
+                        // for(int l = 1; l < A_previous[k][j].path.size(); l++)
+                        //     A[i][j].path.push_back(A_previous[k][j].path[l]);
                     }
                 }
             }
@@ -701,22 +737,22 @@ void Graph::Floyd(int source_id, int target_id)
     //     std::cout << "\n";
     // }
 
-    std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
-    if(A[source_id][target_id].path.size() > 0) {
-        for(int i = 0; i < A[source_id][target_id].path.size() - 1; i++){
-            std::cout << "itera" << std::endl;
-            int x = A[source_id][target_id].path[i], y = A[source_id][target_id].path[i];
-            if(A[source_id][target_id].path[i] < A[source_id][target_id].path[i + 1])
-                y = A[source_id][target_id].path[i + 1];
-            else
-                x = A[source_id][target_id].path[i + 1];
-            //std::cout << "fim" << std::endl;
-            std::cout << "{ " << x << ", " << y << "}" << std::endl;
-            path->insert({x, y});
-        }
-    }
-    saveToDot("floyd.dot", path);
-    delete path;
+    // std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
+    // if(A[source_id][target_id].path.size() > 0) {
+    //     for(int i = 0; i < A[source_id][target_id].path.size() - 1; i++){
+    //         std::cout << "itera" << std::endl;
+    //         int x = A[source_id][target_id].path[i], y = A[source_id][target_id].path[i];
+    //         if(A[source_id][target_id].path[i] < A[source_id][target_id].path[i + 1])
+    //             y = A[source_id][target_id].path[i + 1];
+    //         else
+    //             x = A[source_id][target_id].path[i + 1];
+    //         //std::cout << "fim" << std::endl;
+    //         std::cout << "{ " << x << ", " << y << "}" << std::endl;
+    //         path->insert({x, y});
+    //     }
+    // }
+    // saveToDot("floyd.dot", path);
+    // delete path;
 }
 
 /**

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <unordered_map>
+#include <vector>
 
 #include "include/Graph.hpp"
 
@@ -52,6 +52,8 @@ Graph* readGraph(ifstream& input_file, bool directed, bool weighted_edge, bool w
             graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight, nodeSourceWeight, nodeTargetWeight);
         }
     }
+
+    graph->insertMissingVertices();
 
     return graph;
 }
@@ -114,17 +116,12 @@ int main(int argc, char const *argv[])
 
     // g->printAdjList();
     // g->BFS(1);
-    // g->saveToDot("graph1.dot");
+    g->saveToDot("graph1.dot");
     // g->saveToDot("graph1.dot");
     
-    g->Dijkstra(0, 2);
-    g->Floyd(0, 2);
+    g->Dijkstra(1, 10000);
+    // g->Floyd(0, 2);
     delete g;
-
-    // unordered_map<int, int*> mapa;
-    // mapa.insert({0, new int(1)});
-    // mapa.insert({1, new int(2)});
-    // cout << mapa[50] << endl;
 
     return 0;
 }

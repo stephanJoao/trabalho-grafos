@@ -1,4 +1,6 @@
 #include <unordered_map>
+#include <iostream>
+#include <fstream>
 
 #include "../include/Vertex.hpp"
 
@@ -74,6 +76,8 @@ void Vertex::insertEdge(int target_id, float weight)
         Edge* e = new Edge(target_id, weight);
         edges.insert({target_id, e});
     }
+    else
+        std::cout << id << " -> " << target_id << " já existe" << std::endl;
 }
 
 /**

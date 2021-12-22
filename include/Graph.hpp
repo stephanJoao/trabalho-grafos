@@ -44,13 +44,14 @@ class Graph
 
         void insertVertex(int id, float weight = 1);
         void insertEdge(int id, int target_id, float edge_weight = 1, float source_vertex_weight = 1, float target_vertex_weight = 1);
+        void insertMissingVertices();
         // void removeVertex(int id);
         bool searchVertex(int id);
         void getInfo();
 
         void printAdjList();
         
-        void Dijkstra(int source_id, int target_id);
+        bool Dijkstra(int source_id, int target_id);
         std::set<std::pair<int, int>>* MST_Kruskal();
         std::set<std::pair<int, int>>* BFS(int id, std::set<std::pair<int, int>>* back_edges);
         void topologicalSorting();
