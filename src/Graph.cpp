@@ -7,6 +7,7 @@
 #include <stack>
 #include <list>
 #include <map>
+#include <string>
 
 #include "../include/Graph.hpp"
 #include "../include/Vertex.hpp"
@@ -100,14 +101,47 @@ void Graph::insertEdge(int id, int target_id, float edge_weight, float source_ve
         return;
     }
 
+    if (id >= order) {
+        order = id;
+    }
+    if (target_id >= order) {
+        order = target_id;
+    }
+
     insertVertex(id, source_vertex_weight);
     insertVertex(target_id, target_vertex_weight);
     
     if (this->directed){
+        // if(vertices.find(id) != vertices.end()){
+        //     std::cout << "Vertex already present" << std::endl;
+        //     if(vertices[id]->getEdges().find(target_id) != vertices[id]->getEdges().end())
+        //         std::cout << "Edge already present" << std::endl;
+        // }
         vertices[id]->insertEdge(target_id, edge_weight);
     } else {
+        // if(vertices.find(id) != vertices.end()){
+        //     std::cout << "Vertex already present" << std::endl;
+        //     if(vertices[id]->getEdges().find(target_id) != vertices[id]->getEdges().end())
+        //         std::cout << "Edge already present" << std::endl;
+        // }
         vertices[id]->insertEdge(target_id, edge_weight);
+        // if(vertices.find(target_id) != vertices.end()){
+        //     std::cout << "Vertex already present" << std::endl;
+        //     if(vertices[target_id]->getEdges().find(id) != vertices[target_id]->getEdges().end())
+        //         std::cout << "Edge already present" << std::endl;
+        // }
         vertices[target_id]->insertEdge(id, edge_weight);
+    }
+}
+
+
+/**
+ * @brief Insert missing vertices considering the graph having vertices from 0 to n - 1.
+ */
+void Graph::insertMissingVertices() {
+    for(int i = 0; i < order; i++) {
+        if(vertices.count(i) == 0)
+            insertVertex(i);
     }
 }
 
@@ -128,7 +162,19 @@ bool Graph::searchVertex(int id)
     return vertices[id] != nullptr;
 }
 
-// Print adjacency list
+void Graph::getInfo() {
+    std::cout << "\nVERIFYING PROVIDED GRAPH" << std::endl;
+    std::cout << "  Provided order = " << order << std::endl;
+    std::cout << "  Real number of vertices = " << vertices.size() << std::endl;
+    std::cout << "  Missing vertices (disconnected):\n        ";
+    for(int i = 0; i < order+1; i++) {
+        if (vertices.count(i) == 0) {
+            std::cout << i << " ";
+        }
+    }
+    std::cout << "\n";
+}
+
 void Graph::printAdjList()
 {
     std::cout << "Imprimindo Grafo como uma lista de adjacência:" << std::endl;
@@ -222,7 +268,7 @@ bool Graph::MST_Kruskal()
         int greatest = subsets.at(e.b);
         if(smallest != greatest)
         {
-            // std::cout << "(" << e.a << ", " << e.b << ") ";
+            std::cout << "(" << e.a << ", " << e.b << ") "; //print to screen
             mst_edges->insert(std::pair<int, int>(e.a, e.b));
             cost += e.weight; // sum up the edge weight to the MST cost
 
@@ -286,7 +332,7 @@ bool Graph::BFS(int id)
     {
         // Dequeue top vertex in queue
         id = toVisit.front();
-        // std::cout << id << " ";
+        std::cout << id << " "; //print to screen
         toVisit.pop();
 
         // Check for unvisited vertices in adjacency list and enqueue them
@@ -330,8 +376,7 @@ bool Graph::BFS(int id)
  * 
  * @param outfile_name Name of the file to which the graph will be saved
  */
-void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges, 
-std::set<std::pair<int,int>> *dashed_edges)
+void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges, std::set<std::pair<int,int>> *dashed_edges)
 {
     std::ofstream outfile(outfile_name);
     std::string edgeop; // "->" or "--"
@@ -404,19 +449,23 @@ typedef struct
 
 
 /**
- * @brief Prints the smallest path between two vertices 
- //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
+ * @brief Calculates the smallest path between two vertices using Dijkstra's algorithm, then, 
  //TODO Grafos de exemplo não ponderados com segmentation fault
  * 
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
  */
-void Graph::Dijkstra(int source_id, int target_id)
+bool Graph::Dijkstra(int source_id, int target_id)
 {
-    //TODO verificação da existência dos nós
-    // Initializes non iterated vertices
-    //std::cout << "Initializes non iterated vertices" << std::endl;
+    // Verifies if the vertices exist in the graph (returns false -> not executed)
+    if(vertices.count(source_id) == 0 || vertices.count(target_id) == 0) {
+        std::cout << "ERROR: Dijkstra not executed, one or both of the vertices are not present in the graph" << std::endl;
+        return false;
+    }
+    
+    int n = vertices.size();
 
+    // Initializes non iterated vertices
     std::vector<int> non_iterated;
     for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
         Vertex *v = it->second;
@@ -425,19 +474,24 @@ void Graph::Dijkstra(int source_id, int target_id)
     }
     
     // Initializes iterated vertices
-    //std::cout << "Initializes iterated vertices" << std::endl;
-
     std::vector<int> iterated;
     iterated.push_back(source_id);
 
     // Initializes vector of lengths and paths (called pi)
-    //std::cout << "Initializes pi" << std::endl;
-    
-    Length *pi = new Length[vertices.size() + 1];
-    for(int i = 0; i < vertices.size(); i++) {
-        pi[i].length = std::numeric_limits<int>::max();
+    std::unordered_map<int, Length> pi;
+    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+        Vertex *v = it->second;
+        if(v->getId() == source_id) {
+            Length l;
+            l.length = 0;
+            pi.insert({v->getId(), l});
+        }
+        else {
+            Length l;
+            l.length = std::numeric_limits<int>::max();
+            pi.insert({v->getId(), l});
+        }
     }
-    pi[source_id].length = 0;
     std::unordered_map<int, Edge*> edges = vertices[source_id]->getEdges();
     for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
         Edge *e = it->second;
@@ -446,17 +500,8 @@ void Graph::Dijkstra(int source_id, int target_id)
         pi[e->getTargetId()].path.push_back(e->getTargetId());
     }
 
-    //std::cout << "Inicia algoritmo" << std::endl;
     // Algorithm
     while(non_iterated.size() > 0) {
-        // std::cout << "Chegou aqui?" << std::endl;
-        // for(int i = 0; i < non_iterated.size(); i++) 
-        //     std::cout << non_iterated[i] << " ";
-        // std::cout << "\nPI: ";
-        // for(int i = 0; i < vertices.size(); i++) 
-        //     std::cout << pi[i].length << " ";
-        // std::cout << "\n";
-        
         // Find j with minimal path cost in non_iterated
         int j = 0;
         int j_length = std::numeric_limits<int>::max();
@@ -469,16 +514,17 @@ void Graph::Dijkstra(int source_id, int target_id)
             }
         }
         // Removes this j from the non_iterated
-        //std::cout << "Erases " << non_iterated[j] << " at " << j << std::endl;
         non_iterated.erase(non_iterated.begin() + j);
-        //std::cout << "Erased, new size: " << non_iterated.size() << std::endl;
 
         // Iterate through j adjacencies
         std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
         for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
             Edge *e = it->second;
             int pi_aux;
-            pi_aux = pi[j_id].length + e->getWeight();
+            if(pi[j_id].length != std::numeric_limits<int>::max())
+                pi_aux = pi[j_id].length + e->getWeight();
+            else
+                pi_aux = std::numeric_limits<int>::max();
             if(pi_aux < pi[e->getTargetId()].length) {
                 pi[e->getTargetId()].length = pi_aux;
                 pi[e->getTargetId()].path = pi[j_id].path;
@@ -493,24 +539,34 @@ void Graph::Dijkstra(int source_id, int target_id)
                 if(!non)
                     non_iterated.push_back(e->getTargetId());
             }
-            //std::cout << "Iteratin' through j vertices" << std::endl;
         }
-        //std::cout << "Iterated through j vertices" << std::endl;
     }
 
-    for(int i = 0; i < vertices.size(); i++) {
-        std::cout << pi[i].length << " ";
+    std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
+    if(pi[target_id].path.size() > 0) {
+        std::cout << "  Path found by Dijkstra:" << std::endl;
+        std::cout << "      {";
+        for(int i = 0; i < pi[target_id].path.size() - 1; i++){
+            int x = pi[target_id].path[i], y = pi[target_id].path[i];
+            if(pi[target_id].path[i] < pi[target_id].path[i + 1]) {
+                y = pi[target_id].path[i + 1];
+                std::cout << "(" << x << ", " << y << ")";
+            }
+            else{
+                x = pi[target_id].path[i + 1];
+                std::cout << "(" << y << ", " << x << ")";
+            }
+            if(i < pi[target_id].path.size() - 2)
+                std::cout << ", ";
+            path->insert({x, y});
+        }
+        std::cout << "}" << std::endl;
     }
-    std::cout << "\n";
-    // for(int j = 0; j < vertices.size(); j++)
-    // {
-    //     for(int i = 0; i < pi[j].path.size(); i++) {
-    //         std::cout << pi[j].path[i] << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
+    //TODO Salvar arquivo baseado no nome fornecido na execução
+    saveToDot("dijkstra.dot", path);
+    delete path;
 
-    delete [] pi;
+    return true;
 }
 
 void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order)
@@ -546,7 +602,136 @@ void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<
 }
 
 /**
- * @brief Prints the topological sorting from a DAG (based on the Depth First Search algorithm)
+ * @brief Calculates the smallest path between two vertices using Floyd's algorithm
+ //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
+ * 
+ * @param source_id ID of the starting vertex
+ * @param target_id ID of the target vertex
+ */
+void Graph::Floyd(int source_id, int target_id)
+{
+    //TODO verificação da existência dos nós
+    
+    int n = vertices.size();
+
+    Length A[n][n];
+    Length A_previous[n][n];
+
+    // Creation of matrix A_0
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++) {
+            if(i != j) {
+                A[i][j].length = 1;
+                if(vertices.count(i) == 0){
+                    A[i][j].length = std::numeric_limits<int>::max();
+                }
+                else {
+                    if(vertices[i]->getEdges().count(j) == 0)
+                        A[i][j].length = std::numeric_limits<int>::max();
+                    else {
+                        A[i][j].length = vertices[i]->getEdges()[j]->getWeight(); 
+                        //A[i][j].path.push_back(i);
+                        //A[i][j].path.push_back(j);
+                    }                
+                }
+            }
+            else {
+                A[i][j].length = 0;
+            }
+        }
+    }
+
+    // for(int x = 0; x < n; x++) {
+    //     for(int y = 0; y < n; y++) {
+    //         printf("%12d ", A[x][y].length);
+    //     }
+    //     printf("\n");
+    // }
+    // printf("\n");
+
+    // Iterations through A matrix according to vertices allowed
+    for(int k = 0; k < n; k++) {
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                A_previous[i][j].length = A[i][j].length;
+                //A_previous[i][j].path = A[i][j].path;
+            }
+        }
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                if(i != j) {
+                    int A_aux;
+                    if(A_previous[i][k].length != std::numeric_limits<int>::max() && A_previous[k][j].length != std::numeric_limits<int>::max())
+                        A_aux = A_previous[i][k].length + A_previous[k][j].length;
+                    else
+                        A_aux = std::numeric_limits<int>::max();
+                    if(A_previous[i][j].length > A_aux) {
+                        A[i][j].length = A_aux;
+                        // A[i][j].path = A_previous[i][k].path;
+                        // for(int l = 1; l < A_previous[k][j].path.size(); l++)
+                        //     A[i][j].path.push_back(A_previous[k][j].path[l]);
+                    }
+                }
+            }
+        }
+        // for(int i = 0; i < n; i++) {
+        //     for(int j = 0; j < n; j++) {
+        //         printf("%12d ", A[i][j].length);
+        //     }
+        //     printf("\n");
+        // }
+        // printf("\n");
+
+        // for(int i = 0; i < n; i++) {
+        //     for(int j = 0; j < n; j++) {
+        //         if(A[i][j].path.size() == 0)
+        //             std::cout << "Caminho vazio";
+        //         for(int k = 0; k < A[i][j].path.size(); k++)
+        //             std::cout << A[i][j].path[k] << " ";
+        //         std::cout << "     ";
+        //     }
+        //     printf("\n");
+        // }
+        // printf("\n");
+    }
+
+    // for(int i = 0; i < n; i++) {
+    //     for(int j = 0; j < n; j++) {
+    //         printf("%12d ", A[i][j].length);
+    //     }
+    //     printf("\n");
+    // }
+
+    // for(int j = 0; j < n; j++)
+    // {
+    //     if(A[source_id][j].path.size() == 0)
+    //         std::cout << "Caminho vazio";
+    //     for(int i = 0; i < A[source_id][j].path.size(); i++) {
+    //         std::cout << A[source_id][j].path[i] << " ";
+    //     }
+    //     std::cout << "\n";
+    // }
+
+    // std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
+    // if(A[source_id][target_id].path.size() > 0) {
+    //     for(int i = 0; i < A[source_id][target_id].path.size() - 1; i++){
+    //         std::cout << "itera" << std::endl;
+    //         int x = A[source_id][target_id].path[i], y = A[source_id][target_id].path[i];
+    //         if(A[source_id][target_id].path[i] < A[source_id][target_id].path[i + 1])
+    //             y = A[source_id][target_id].path[i + 1];
+    //         else
+    //             x = A[source_id][target_id].path[i + 1];
+    //         //std::cout << "fim" << std::endl;
+    //         std::cout << "{ " << x << ", " << y << "}" << std::endl;
+    //         path->insert({x, y});
+    //     }
+    // }
+    // saveToDot("floyd.dot", path);
+    // delete path;
+}
+
+/**
+ * @brief Prints the vertices in order according to the Breadth First Search algorithm
  * 
  */
 void Graph::topologicalSorting(){
