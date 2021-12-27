@@ -51,8 +51,8 @@ class Graph
         void printAdjList();
         
         void Dijkstra(int source_id, int target_id);
-        std::set<std::pair<int, int>>* MST_Kruskal();
-        std::set<std::pair<int, int>>* BFS(int id, std::set<std::pair<int, int>>* back_edges);
+        bool MST_Kruskal();
+        bool BFS(int id);
         void topologicalSorting();
         void auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order);
         void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges = nullptr, 

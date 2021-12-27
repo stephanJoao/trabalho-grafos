@@ -180,13 +180,13 @@ struct SimpleEdge
  * 
  * @return mst_edges Set of tree edges
  */
-std::set<std::pair<int, int>>* Graph::MST_Kruskal()
+bool Graph::MST_Kruskal()
 {
     std::cout << "Arvore Geradora Minima de Kruskal" << std::endl;
     
     if (vertices.empty()) {
         std::cerr << "No vertices in graph!" << std::endl;
-        return nullptr;
+        return false;
     }
 
     std::unordered_map<int, int> subsets;
@@ -222,7 +222,7 @@ std::set<std::pair<int, int>>* Graph::MST_Kruskal()
         int greatest = subsets.at(e.b);
         if(smallest != greatest)
         {
-            std::cout << "(" << e.a << ", " << e.b << ") ";
+            // std::cout << "(" << e.a << ", " << e.b << ") ";
             mst_edges->insert(std::pair<int, int>(e.a, e.b));
             cost += e.weight; // sum up the edge weight to the MST cost
 
@@ -239,7 +239,10 @@ std::set<std::pair<int, int>>* Graph::MST_Kruskal()
     }
 
     std::cout << std::endl << "Custo: " << cost << std::endl;
-    return mst_edges;
+    saveToDot("mst_kruskal.dot", mst_edges);
+
+    delete mst_edges;
+    return true;
 }
 
 /**
@@ -253,17 +256,18 @@ std::set<std::pair<int, int>>* Graph::MST_Kruskal()
  * @param back_edges Set of back edges (will be overwritten)
  * @return tree_edges Set of tree edges
  */
-std::set<std::pair<int, int>>* Graph::BFS(int id, std::set<std::pair<int, int>>* back_edges)
+bool Graph::BFS(int id)
 {
     std::cout << "Caminhamento em largura:" << std::endl;
 
     if (!searchVertex(id)) {
         std::cerr << "Vertex not found!" << std::endl;
-        return nullptr;
+        return false;
     }
 
-    // Set of tree edges (which will be printed in a different color in the .dot)
+    // Sets of tree and back edges (which will be printed in different colors in the .dot)
     std::set<std::pair<int, int>>* tree_edges = new std::set<std::pair<int, int>>;
+    std::set<std::pair<int, int>>* back_edges = new std::set<std::pair<int, int>>;
 
     std::unordered_map<int, char> colored_vertices;
     for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
@@ -282,7 +286,7 @@ std::set<std::pair<int, int>>* Graph::BFS(int id, std::set<std::pair<int, int>>*
     {
         // Dequeue top vertex in queue
         id = toVisit.front();
-        std::cout << id << " ";
+        // std::cout << id << " ";
         toVisit.pop();
 
         // Check for unvisited vertices in adjacency list and enqueue them
@@ -314,7 +318,11 @@ std::set<std::pair<int, int>>* Graph::BFS(int id, std::set<std::pair<int, int>>*
     }
     std::cout << std::endl;
 
-    return tree_edges;
+    saveToDot("bfs_tree.dot", tree_edges, back_edges);
+
+    delete tree_edges;
+    delete back_edges;
+    return true;
 }
 
 /**
