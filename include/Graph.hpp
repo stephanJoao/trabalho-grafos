@@ -21,6 +21,7 @@ class Graph
         bool weighted_edge;
         bool weighted_vertex;
         std::unordered_map<int, Vertex*> vertices;
+        std::string outfile_name;
 
     // Methods
     private:
@@ -39,6 +40,7 @@ class Graph
         bool isWeightedEdge();
         bool isWeightedVertex();
         Vertex* getVertex(int id);
+        void setOutfileName(std::string outfile_name);
     
         // Other methods
 
@@ -48,7 +50,7 @@ class Graph
         bool searchVertex(int id);
         void getInfo();
         void printAdjList();
-        void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges = nullptr, std::set<std::pair<int,int>> *gray_edges = nullptr);
+        void saveToDot(std::string function, std::set<std::pair<int,int>> *red_edges = nullptr, std::set<std::pair<int,int>> *gray_edges = nullptr);
 
         // Assignment especific methods
         

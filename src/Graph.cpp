@@ -65,6 +65,11 @@ Vertex* Graph::getVertex(int id)
     return vertices[id];
 }
 
+void Graph::setOutfileName(std::string outfile_name)
+{
+    this->outfile_name = "./output/" + outfile_name + ".dot";
+}
+
 //* Other methods
 
 /**
@@ -184,28 +189,28 @@ void Graph::printAdjList()
 /**
  * @brief Save the graph in .dot
  * 
- * @param outfile_name Name of the file to which the graph will be saved
  */
-void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges, std::set<std::pair<int,int>> *dashed_edges)
+void Graph::saveToDot(std::string function, std::set<std::pair<int,int>> *red_edges, std::set<std::pair<int,int>> *dashed_edges)
 {
-    std::ofstream outfile(outfile_name);
+    std::ofstream outfile;
+    outfile.open(outfile_name, std::ios::app);
     std::string edgeop; // "->" or "--"
 
     if (this->directed)
     {
-        outfile << "digraph Grafo {" << std::endl;
+        outfile << "digraph " << function << " {" << std::endl;
         edgeop = " -> ";
     }
     else
     {
-        outfile << "graph Grafo {" << std::endl;
+        outfile << "graph " << function << " {" << std::endl;
         edgeop = " -- ";
     }
 
     if(isWeightedVertex()) {
         for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
             Vertex *v = itV->second;
-            outfile << v->getId() << " [weight=" << v->getWeight() << "];" << std::endl;
+            outfile << "\t" << v->getId() << " [weight=" << v->getWeight() << "];" << std::endl;
         }
         std::cout << std::endl;
     }
@@ -229,7 +234,7 @@ void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *re
             // Then mark as included and write it to the file
             if(!included.count(pair_vertices)) {
                 included.insert(pair_vertices);
-                outfile << v->getId() << edgeop << e->getTargetId();
+                outfile << "\t" << v->getId() << edgeop << e->getTargetId();
                 if(isWeightedEdge()) {
                     outfile << " [weight=" << e->getWeight();
                     if(red_edges != nullptr && red_edges->count(pair_vertices))
@@ -237,7 +242,7 @@ void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *re
                     else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
                         outfile << " style=\"dashed\"";
                     outfile << "]";
-                } else { 
+                } else {
                     if(red_edges != nullptr && red_edges->count(pair_vertices))
                         outfile << " [color=\"red\"]";
                     else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
@@ -374,7 +379,7 @@ bool Graph::Dijkstra(int source_id, int target_id)
         std::cout << "}" << std::endl;
     }
     //TODO Salvar arquivo baseado no nome fornecido na execução
-    saveToDot("dijkstra.dot", path);
+    saveToDot("Dijkstra", path);
     delete path;
 
     return true;
@@ -468,7 +473,7 @@ bool Graph::Floyd(int source_id, int target_id)
         std::cout << "}" << std::endl;
     }
     //TODO Salvar arquivo baseado no nome fornecido na execução
-    saveToDot("floyd.dot", path);
+    saveToDot("Floyd", path);
     delete path;
 
     // Deletion of used dynamic matrixes 
@@ -514,7 +519,6 @@ struct SimpleEdge
 /**
  * @brief Kruskal's Minimum Spanning Tree
  * 
- * @return mst_edges Set of tree edges
  */
 bool Graph::MST_Kruskal()
 {
@@ -575,7 +579,7 @@ bool Graph::MST_Kruskal()
     }
 
     std::cout << std::endl << "Custo: " << cost << std::endl;
-    saveToDot("mst_kruskal.dot", mst_edges);
+    saveToDot("Kruskal", mst_edges);
 
     delete mst_edges;
     return true;
@@ -589,8 +593,6 @@ bool Graph::MST_Kruskal()
  * - Black: visited
  * 
  * @param id ID of the starting vertex
- * @param back_edges Set of back edges (will be overwritten)
- * @return tree_edges Set of tree edges
  */
 bool Graph::BFS(int id)
 {
@@ -654,7 +656,7 @@ bool Graph::BFS(int id)
     }
     std::cout << std::endl;
 
-    saveToDot("bfs_tree.dot", tree_edges, back_edges);
+    saveToDot("BFS", tree_edges, back_edges);
 
     delete tree_edges;
     delete back_edges;

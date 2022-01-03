@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "include/Graph.hpp"
-
-#define INFINITY std::numeric_limits<int>::max()
 
 using namespace std;
 
@@ -60,9 +60,24 @@ Graph* readGraph(ifstream& input_file, bool directed, bool weighted_edge, bool w
     return graph;
 }
 
+void printOptions()
+{
+    cout << "MENU" << endl;
+    cout << "----" << endl;
+    cout << "[1] Subgrafo induzido por conjunto de vértices" << endl;
+    cout << "[2] Subgrafo induzido por conjunto de vértices" << endl;
+    cout << "[3] Caminho Mínimo entre dois vértices - Dijkstra" << endl;
+    cout << "[4] Caminho Mínimo entre dois vértices - Floyd" << endl;
+    cout << "[5] Árvore Geradora Mínima de Kruskal" << endl;
+    cout << "[6] Imprimir caminhamento em largura" << endl;
+    cout << "[7] Imprimir ordenacao topológica" << endl;
+    cout << "[0] Sair" << endl;
+}
+
 int main(int argc, char const *argv[]) 
 {
     // Verifies if all parameters have been provided
+    
     if (argc != 6) 
     {
         cout << "ERROR: Expecting: ./<program_name> <input_file> <output_file> <directed> <weighted_edge> <weighted_vertex> " << endl;
@@ -81,8 +96,8 @@ int main(int argc, char const *argv[])
     bool weighted_vertex = atoi(argv[5]);
     std::cout << "Weighted vertex: " << weighted_vertex << std::endl;
 
-
     // Read of input_file
+    
     ifstream input_file;
     input_file.open(input_file_name, ios::in);
 
@@ -90,44 +105,58 @@ int main(int argc, char const *argv[])
     if(input_file.is_open())
     {
         g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+        g->setOutfileName(output_file_name);
     }
-    cout << "Hello World!!!" << endl;
     
-    // delete g;
-    // Graph* g = new Graph(7, true, true, false);
-    // g->insertEdge(0, 1, 4);
-    // g->insertEdge(0, 2, 2);
-    // g->insertEdge(1, 2, -3);
-    // g->insertEdge(1, 3, 1);
-    // g->insertEdge(1, 4, 3);
-    // g->insertEdge(2, 4, 2);
-    // g->insertEdge(2, 3, 3);
-    // g->insertEdge(3, 4, -2);
-    // g->insertEdge(3, 6, 4);
-    // g->insertEdge(4, 5, 3);
-    // g->insertEdge(4, 6, 3);
-    // g->insertEdge(5, 6, 1);
+    // Menu
 
-    // delete g;
-    // g = new Graph(3, true, true, false);
-    // g->insertEdge(0, 1, 4);
-    // g->insertEdge(0, 2, 11);
-    // g->insertEdge(1, 0, 6);
-    // g->insertEdge(1, 2, 2);
-    // g->insertEdge(2, 0, 3);
+    int choice, a, b;
+    mkdir("output", 0777);
+    do 
+    {
+        cout << "Options..." << endl;
+        printOptions();
+        cin >> choice;
 
-    // g->getInfo();
-
-    // g->printAdjList();
-    // g->BFS(1);
-    // g->saveToDot("graph1.dot");
-    // g->saveToDot("graph1.dot");
+        switch (choice)
+        {
+            case 0:
+                /* code */
+                break;
+            case 1:
+                /* A */
+                break;
+            case 2:
+                /* B */
+                break;
+            case 3:
+                cout << "Type the vertices for the algorithm: ";
+                cin >> a >> b;
+                g->Dijkstra(a, b); 
+                break;
+            case 4:
+                cout << "Type the vertices for the algorithm: ";
+                cin >> a >> b;
+                g->Floyd(a, b); 
+                break;
+            case 5:
+                g->MST_Kruskal();
+                break;
+            case 6:
+                cout << "Type the vertex for the algorithm: ";
+                cin >> a;
+                g->BFS(a);
+                break;
+            case 7:
+                g->topologicalSorting();
+                break;
+            default:
+                break;
+        }
+    }
+    while(choice != 0);
     
-    g->Dijkstra(1, 2);
-    g->Floyd(1, 2);
     delete g;
-
-    cout << INFINITY << endl;
 
     return 0;
 }
