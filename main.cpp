@@ -4,6 +4,8 @@
 
 #include "include/Graph.hpp"
 
+#define INFINITY std::numeric_limits<int>::max()
+
 using namespace std;
 
 Graph* readGraph(ifstream& input_file, bool directed, bool weighted_edge, bool weighted_vertex)
@@ -105,7 +107,9 @@ int main(int argc, char const *argv[])
     // g->insertEdge(4, 5, 3);
     // g->insertEdge(4, 6, 3);
     // g->insertEdge(5, 6, 1);
-    // Graph* g = new Graph(3, true, true, false);
+
+    // delete g;
+    // g = new Graph(3, true, true, false);
     // g->insertEdge(0, 1, 4);
     // g->insertEdge(0, 2, 11);
     // g->insertEdge(1, 0, 6);
@@ -116,12 +120,14 @@ int main(int argc, char const *argv[])
 
     // g->printAdjList();
     // g->BFS(1);
-    g->saveToDot("graph1.dot");
+    // g->saveToDot("graph1.dot");
     // g->saveToDot("graph1.dot");
     
-    g->Dijkstra(1, 10000);
-    // g->Floyd(0, 2);
+    g->Dijkstra(1, 2);
+    g->Floyd(1, 2);
     delete g;
+
+    cout << INFINITY << endl;
 
     return 0;
 }

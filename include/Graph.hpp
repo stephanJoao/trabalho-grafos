@@ -58,7 +58,7 @@ class Graph
         void auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order);
         void saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges = nullptr, 
         std::set<std::pair<int,int>> *gray_edges = nullptr);
-        void Floyd(int source_id, int target_id);
+        bool Floyd(int source_id, int target_id);
 
 };
 

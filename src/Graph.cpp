@@ -13,6 +13,8 @@
 #include "../include/Vertex.hpp"
 #include "../include/Edge.hpp"
 
+#define INFINITY std::numeric_limits<int>::max()
+
 //* Constructors and destructors implementations
 
 Graph::Graph(int order, bool directed, bool weighted_edge, bool weighted_vertex)
@@ -97,7 +99,7 @@ void Graph::insertVertex(int id, float weight)
 void Graph::insertEdge(int id, int target_id, float edge_weight, float source_vertex_weight, float target_vertex_weight)
 {
     if (id == target_id) {
-        std::cerr << "Vertices cannot have equal ID! (Selfloop not allowed)" << std::endl;
+        std::cerr << "Vertices cannot have equal ID! (Selfloop not allowed)" << id << std::endl;
         return;
     }
 
@@ -608,30 +610,36 @@ void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
  */
-void Graph::Floyd(int source_id, int target_id)
+bool Graph::Floyd(int source_id, int target_id)
 {
-    //TODO verificação da existência dos nós
+    // Verifies if the vertices exist in the graph (returns false -> not executed)
+    if(vertices.count(source_id) == 0 || vertices.count(target_id) == 0) {
+        std::cout << "ERROR: Floyd not executed, one or both of the vertices are not present in the graph" << std::endl;
+        return false;
+    }
     
     int n = vertices.size();
 
-    Length A[n][n];
-    Length A_previous[n][n];
+    Length** A = new Length*[n];
+    for(int i = 0; i < n; i++) {
+        A[i] = new Length[n];
+    }
 
     // Creation of matrix A_0
     for(int i = 0; i < n; i++){
         for(int j = 0; j < n; j++) {
             if(i != j) {
-                A[i][j].length = 1;
                 if(vertices.count(i) == 0){
                     A[i][j].length = std::numeric_limits<int>::max();
                 }
                 else {
-                    if(vertices[i]->getEdges().count(j) == 0)
+                    if(vertices[i]->getEdges().count(j) == 0) {
                         A[i][j].length = std::numeric_limits<int>::max();
+                    }
                     else {
                         A[i][j].length = vertices[i]->getEdges()[j]->getWeight(); 
-                        //A[i][j].path.push_back(i);
-                        //A[i][j].path.push_back(j);
+                        A[i][j].path.push_back(i);
+                        A[i][j].path.push_back(j);
                     }                
                 }
             }
@@ -641,93 +649,58 @@ void Graph::Floyd(int source_id, int target_id)
         }
     }
 
-    // for(int x = 0; x < n; x++) {
-    //     for(int y = 0; y < n; y++) {
-    //         printf("%12d ", A[x][y].length);
-    //     }
-    //     printf("\n");
-    // }
-    // printf("\n");
-
-    // Iterations through A matrix according to vertices allowed
+    // Iterations through A matrix according to K index
     for(int k = 0; k < n; k++) {
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
-                A_previous[i][j].length = A[i][j].length;
-                //A_previous[i][j].path = A[i][j].path;
-            }
-        }
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
+                int A_calc;
                 if(i != j) {
-                    int A_aux;
-                    if(A_previous[i][k].length != std::numeric_limits<int>::max() && A_previous[k][j].length != std::numeric_limits<int>::max())
-                        A_aux = A_previous[i][k].length + A_previous[k][j].length;
+                    if(A[i][k].length != std::numeric_limits<int>::max() && A[k][j].length != std::numeric_limits<int>::max())
+                        A_calc = A[i][k].length + A[k][j].length;
                     else
-                        A_aux = std::numeric_limits<int>::max();
-                    if(A_previous[i][j].length > A_aux) {
-                        A[i][j].length = A_aux;
-                        // A[i][j].path = A_previous[i][k].path;
-                        // for(int l = 1; l < A_previous[k][j].path.size(); l++)
-                        //     A[i][j].path.push_back(A_previous[k][j].path[l]);
+                        A_calc = std::numeric_limits<int>::max();
+                    if(A[i][j].length > A_calc) {
+                        A[i][j].length = A_calc;
+                        A[i][j].path = A[i][k].path;
+                        for(int l = 1; l < A[k][j].path.size(); l++)
+                            A[i][j].path.push_back(A[k][j].path[l]);
                     }
                 }
             }
         }
-        // for(int i = 0; i < n; i++) {
-        //     for(int j = 0; j < n; j++) {
-        //         printf("%12d ", A[i][j].length);
-        //     }
-        //     printf("\n");
-        // }
-        // printf("\n");
-
-        // for(int i = 0; i < n; i++) {
-        //     for(int j = 0; j < n; j++) {
-        //         if(A[i][j].path.size() == 0)
-        //             std::cout << "Caminho vazio";
-        //         for(int k = 0; k < A[i][j].path.size(); k++)
-        //             std::cout << A[i][j].path[k] << " ";
-        //         std::cout << "     ";
-        //     }
-        //     printf("\n");
-        // }
-        // printf("\n");
     }
 
-    // for(int i = 0; i < n; i++) {
-    //     for(int j = 0; j < n; j++) {
-    //         printf("%12d ", A[i][j].length);
-    //     }
-    //     printf("\n");
-    // }
+    std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
+    if(A[source_id][target_id].path.size() > 0) {
+        std::cout << "  Path found by Floyd:" << std::endl;
+        std::cout << "      {";
+        for(int i = 0; i < A[source_id][target_id].path.size() - 1; i++){
+            int x = A[source_id][target_id].path[i], y = A[source_id][target_id].path[i];
+            if(A[source_id][target_id].path[i] < A[source_id][target_id].path[i + 1]) {
+                y = A[source_id][target_id].path[i + 1];
+                std::cout << "(" << x << ", " << y << ")";
+            }
+            else{
+                x = A[source_id][target_id].path[i + 1];
+                std::cout << "(" << y << ", " << x << ")";
+            }
+            if(i < A[source_id][target_id].path.size() - 2)
+                std::cout << ", ";
+            path->insert({x, y});
+        }
+        std::cout << "}" << std::endl;
+    }
+    //TODO Salvar arquivo baseado no nome fornecido na execução
+    saveToDot("floyd.dot", path);
+    delete path;
 
-    // for(int j = 0; j < n; j++)
-    // {
-    //     if(A[source_id][j].path.size() == 0)
-    //         std::cout << "Caminho vazio";
-    //     for(int i = 0; i < A[source_id][j].path.size(); i++) {
-    //         std::cout << A[source_id][j].path[i] << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
+    // Deletion of used dynamic matrixes 
+    for(int i = 0; i < n; i++) {
+      delete [] A[i];    
+    }
+    delete [] A;
 
-    // std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
-    // if(A[source_id][target_id].path.size() > 0) {
-    //     for(int i = 0; i < A[source_id][target_id].path.size() - 1; i++){
-    //         std::cout << "itera" << std::endl;
-    //         int x = A[source_id][target_id].path[i], y = A[source_id][target_id].path[i];
-    //         if(A[source_id][target_id].path[i] < A[source_id][target_id].path[i + 1])
-    //             y = A[source_id][target_id].path[i + 1];
-    //         else
-    //             x = A[source_id][target_id].path[i + 1];
-    //         //std::cout << "fim" << std::endl;
-    //         std::cout << "{ " << x << ", " << y << "}" << std::endl;
-    //         path->insert({x, y});
-    //     }
-    // }
-    // saveToDot("floyd.dot", path);
-    // delete path;
+    return true;
 }
 
 /**
