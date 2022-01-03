@@ -4,8 +4,6 @@
 #include <queue>
 #include <set>
 #include <list>
-#include <stack>
-#include <list>
 #include <map>
 #include <string>
 
@@ -69,11 +67,6 @@ Vertex* Graph::getVertex(int id)
 
 //* Other methods
 
-/*
-    The outdegree attribute of vertices is used as a counter for the number of edges in the graph.
-    This allows the correct updating of the numbers of edges in the graph being directed or not.
- */
-
 /**
  * Insert vertex in graph.
  *
@@ -136,21 +129,16 @@ void Graph::insertEdge(int id, int target_id, float edge_weight, float source_ve
     }
 }
 
-
 /**
  * @brief Insert missing vertices considering the graph having vertices from 0 to n - 1.
  */
-void Graph::insertMissingVertices() {
+void Graph::insertMissingVertices() 
+{
     for(int i = 0; i < order; i++) {
         if(vertices.count(i) == 0)
             insertVertex(i);
     }
 }
-
-// void Graph::removeVertex(int id)
-// {
-
-// }
 
 /**
  * @brief Return if the vertex is in the graph
@@ -164,7 +152,8 @@ bool Graph::searchVertex(int id)
     return vertices[id] != nullptr;
 }
 
-void Graph::getInfo() {
+void Graph::getInfo() 
+{
     std::cout << "\nVERIFYING PROVIDED GRAPH" << std::endl;
     std::cout << "  Provided order = " << order << std::endl;
     std::cout << "  Real number of vertices = " << vertices.size() << std::endl;
@@ -190,6 +179,305 @@ void Graph::printAdjList()
         }
         std::cout << std::endl;
     }
+}
+
+/**
+ * @brief Save the graph in .dot
+ * 
+ * @param outfile_name Name of the file to which the graph will be saved
+ */
+void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges, std::set<std::pair<int,int>> *dashed_edges)
+{
+    std::ofstream outfile(outfile_name);
+    std::string edgeop; // "->" or "--"
+
+    if (this->directed)
+    {
+        outfile << "digraph Grafo {" << std::endl;
+        edgeop = " -> ";
+    }
+    else
+    {
+        outfile << "graph Grafo {" << std::endl;
+        edgeop = " -- ";
+    }
+
+    if(isWeightedVertex()) {
+        for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
+            Vertex *v = itV->second;
+            outfile << v->getId() << " [weight=" << v->getWeight() << "];" << std::endl;
+        }
+        std::cout << std::endl;
+    }
+
+    // Set of "edges" that have already been written to the file
+    std::set<std::pair<int,int>> included;
+
+    // Iterate through vertices and edges
+    for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
+        Vertex *v = itV->second;
+        std::unordered_map<int, Edge*> edges = v->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE) {
+            Edge *e = itE->second;
+            
+            // Create "edge" in which the smallest vertex comes first
+            std::pair<int,int> pair_vertices(v->getId(), e->getTargetId());
+            if(!this->directed && pair_vertices.second < pair_vertices.first)
+                std::swap(pair_vertices.first, pair_vertices.second);
+
+            // If this "edge" hasn't been included yet
+            // Then mark as included and write it to the file
+            if(!included.count(pair_vertices)) {
+                included.insert(pair_vertices);
+                outfile << v->getId() << edgeop << e->getTargetId();
+                if(isWeightedEdge()) {
+                    outfile << " [weight=" << e->getWeight();
+                    if(red_edges != nullptr && red_edges->count(pair_vertices))
+                        outfile << " color=\"red\"";
+                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
+                        outfile << " style=\"dashed\"";
+                    outfile << "]";
+                } else { 
+                    if(red_edges != nullptr && red_edges->count(pair_vertices))
+                        outfile << " [color=\"red\"]";
+                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
+                        outfile << " [style=\"dashed\"]";
+                }
+                outfile << ";" << std::endl;
+            }
+        }
+    }
+    
+    outfile << "}" << std::endl;
+}
+
+//* Assignment specific methods
+
+typedef struct
+{
+    int length;
+    std::vector<int> path;
+}Length;
+
+/**
+ * @brief Calculates the smallest path between two vertices using Dijkstra's algorithm, then, 
+ //TODO Grafos de exemplo não ponderados com segmentation fault
+ * 
+ * @param source_id ID of the starting vertex
+ * @param target_id ID of the target vertex
+ */
+bool Graph::Dijkstra(int source_id, int target_id)
+{
+    // Verifies if the vertices exist in the graph (returns false -> not executed)
+    if(vertices.count(source_id) == 0 || vertices.count(target_id) == 0) {
+        std::cout << "ERROR: Dijkstra not executed, one or both of the vertices are not present in the graph" << std::endl;
+        return false;
+    }
+    
+    int n = vertices.size();
+
+    // Initializes non iterated vertices
+    std::vector<int> non_iterated;
+    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+        Vertex *v = it->second;
+        if(v->getId() != source_id)
+            non_iterated.push_back(v->getId());
+    }
+    
+    // Initializes iterated vertices
+    std::vector<int> iterated;
+    iterated.push_back(source_id);
+
+    // Initializes vector of lengths and paths (called pi)
+    std::unordered_map<int, Length> pi;
+    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
+        Vertex *v = it->second;
+        if(v->getId() == source_id) {
+            Length l;
+            l.length = 0;
+            pi.insert({v->getId(), l});
+        }
+        else {
+            Length l;
+            l.length = INFINITY;
+            pi.insert({v->getId(), l});
+        }
+    }
+    std::unordered_map<int, Edge*> edges = vertices[source_id]->getEdges();
+    for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
+        Edge *e = it->second;
+        pi[e->getTargetId()].length = e->getWeight();
+        pi[e->getTargetId()].path.push_back(source_id);
+        pi[e->getTargetId()].path.push_back(e->getTargetId());
+    }
+
+    // Algorithm
+    while(non_iterated.size() > 0) {
+        // Find j with minimal path cost in non_iterated
+        int j = 0;
+        int j_length = INFINITY;
+        int j_id = 0;
+        for(int i = 0 ; i < non_iterated.size(); i++) {
+            if(pi[non_iterated[i]].length < j_length) {
+                j = i;
+                j_id = non_iterated[j];
+                j_length = pi[j_id].length;
+            }
+        }
+        // Removes this j from the non_iterated
+        non_iterated.erase(non_iterated.begin() + j);
+
+        // Iterate through j adjacencies
+        std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
+        for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
+            Edge *e = it->second;
+            int pi_aux;
+            if(pi[j_id].length != INFINITY)
+                pi_aux = pi[j_id].length + e->getWeight();
+            else
+                pi_aux = INFINITY;
+            if(pi_aux < pi[e->getTargetId()].length) {
+                pi[e->getTargetId()].length = pi_aux;
+                pi[e->getTargetId()].path = pi[j_id].path;
+                pi[e->getTargetId()].path.push_back(e->getTargetId());
+                bool non = false;
+                for(int i = 0 ; i < non_iterated.size(); i++){
+                    if(non_iterated[i] == e->getTargetId()) {
+                        non = true;
+                        break;
+                    }
+                }
+                if(!non)
+                    non_iterated.push_back(e->getTargetId());
+            }
+        }
+    }
+
+    std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
+    if(pi[target_id].path.size() > 0) {
+        std::cout << "  Path found by Dijkstra:" << std::endl;
+        std::cout << "      {";
+        for(int i = 0; i < pi[target_id].path.size() - 1; i++){
+            int x = pi[target_id].path[i], y = pi[target_id].path[i];
+            if(pi[target_id].path[i] < pi[target_id].path[i + 1]) {
+                y = pi[target_id].path[i + 1];
+                std::cout << "(" << x << ", " << y << ")";
+            }
+            else{
+                x = pi[target_id].path[i + 1];
+                std::cout << "(" << y << ", " << x << ")";
+            }
+            if(i < pi[target_id].path.size() - 2)
+                std::cout << ", ";
+            path->insert({x, y});
+        }
+        std::cout << "}" << std::endl;
+    }
+    //TODO Salvar arquivo baseado no nome fornecido na execução
+    saveToDot("dijkstra.dot", path);
+    delete path;
+
+    return true;
+}
+
+/**
+ * @brief Calculates the smallest path between two vertices using Floyd's algorithm
+ //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
+ * 
+ * @param source_id ID of the starting vertex
+ * @param target_id ID of the target vertex
+ */
+bool Graph::Floyd(int source_id, int target_id)
+{
+    // Verifies if the vertices exist in the graph (returns false -> not executed)
+    if(vertices.count(source_id) == 0 || vertices.count(target_id) == 0) {
+        std::cout << "ERROR: Floyd not executed, one or both of the vertices are not present in the graph" << std::endl;
+        return false;
+    }
+    
+    int n = vertices.size();
+
+    Length** A = new Length*[n];
+    for(int i = 0; i < n; i++) {
+        A[i] = new Length[n];
+    }
+
+    // Creation of matrix A_0
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < n; j++) {
+            if(i != j) {
+                if(vertices.count(i) == 0){
+                    A[i][j].length = INFINITY;
+                }
+                else {
+                    if(vertices[i]->getEdges().count(j) == 0) {
+                        A[i][j].length = INFINITY;
+                    }
+                    else {
+                        A[i][j].length = vertices[i]->getEdges()[j]->getWeight(); 
+                        A[i][j].path.push_back(i);
+                        A[i][j].path.push_back(j);
+                    }                
+                }
+            }
+            else {
+                A[i][j].length = 0;
+            }
+        }
+    }
+
+    // Iterations through A matrix according to K index
+    for(int k = 0; k < n; k++) {
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < n; j++) {
+                int A_calc;
+                if(i != j) {
+                    if(A[i][k].length != INFINITY && A[k][j].length != INFINITY)
+                        A_calc = A[i][k].length + A[k][j].length;
+                    else
+                        A_calc = INFINITY;
+                    if(A[i][j].length > A_calc) {
+                        A[i][j].length = A_calc;
+                        A[i][j].path = A[i][k].path;
+                        for(int l = 1; l < A[k][j].path.size(); l++)
+                            A[i][j].path.push_back(A[k][j].path[l]);
+                    }
+                }
+            }
+        }
+    }
+
+    std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
+    if(A[source_id][target_id].path.size() > 0) {
+        std::cout << "  Path found by Floyd:" << std::endl;
+        std::cout << "      {";
+        for(int i = 0; i < A[source_id][target_id].path.size() - 1; i++){
+            int x = A[source_id][target_id].path[i], y = A[source_id][target_id].path[i];
+            if(A[source_id][target_id].path[i] < A[source_id][target_id].path[i + 1]) {
+                y = A[source_id][target_id].path[i + 1];
+                std::cout << "(" << x << ", " << y << ")";
+            }
+            else{
+                x = A[source_id][target_id].path[i + 1];
+                std::cout << "(" << y << ", " << x << ")";
+            }
+            if(i < A[source_id][target_id].path.size() - 2)
+                std::cout << ", ";
+            path->insert({x, y});
+        }
+        std::cout << "}" << std::endl;
+    }
+    //TODO Salvar arquivo baseado no nome fornecido na execução
+    saveToDot("floyd.dot", path);
+    delete path;
+
+    // Deletion of used dynamic matrixes 
+    for(int i = 0; i < n; i++) {
+      delete [] A[i];    
+    }
+    delete [] A;
+
+    return true;
 }
 
 struct SimpleEdge
@@ -373,204 +661,6 @@ bool Graph::BFS(int id)
     return true;
 }
 
-/**
- * @brief Save the graph in .dot
- * 
- * @param outfile_name Name of the file to which the graph will be saved
- */
-void Graph::saveToDot(std::string outfile_name, std::set<std::pair<int,int>> *red_edges, std::set<std::pair<int,int>> *dashed_edges)
-{
-    std::ofstream outfile(outfile_name);
-    std::string edgeop; // "->" or "--"
-
-    if (this->directed)
-    {
-        outfile << "digraph Grafo {" << std::endl;
-        edgeop = " -> ";
-    }
-    else
-    {
-        outfile << "graph Grafo {" << std::endl;
-        edgeop = " -- ";
-    }
-
-    if(isWeightedVertex()) {
-        for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
-            Vertex *v = itV->second;
-            outfile << v->getId() << " [weight=" << v->getWeight() << "];" << std::endl;
-        }
-        std::cout << std::endl;
-    }
-
-    // Set of "edges" that have already been written to the file
-    std::set<std::pair<int,int>> included;
-
-    // Iterate through vertices and edges
-    for(std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV) {
-        Vertex *v = itV->second;
-        std::unordered_map<int, Edge*> edges = v->getEdges();
-        for(std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE) {
-            Edge *e = itE->second;
-            
-            // Create "edge" in which the smallest vertex comes first
-            std::pair<int,int> pair_vertices(v->getId(), e->getTargetId());
-            if(!this->directed && pair_vertices.second < pair_vertices.first)
-                std::swap(pair_vertices.first, pair_vertices.second);
-
-            // If this "edge" hasn't been included yet
-            // Then mark as included and write it to the file
-            if(!included.count(pair_vertices)) {
-                included.insert(pair_vertices);
-                outfile << v->getId() << edgeop << e->getTargetId();
-                if(isWeightedEdge()) {
-                    outfile << " [weight=" << e->getWeight();
-                    if(red_edges != nullptr && red_edges->count(pair_vertices))
-                        outfile << " color=\"red\"";
-                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
-                        outfile << " style=\"dashed\"";
-                    outfile << "]";
-                } else { 
-                    if(red_edges != nullptr && red_edges->count(pair_vertices))
-                        outfile << " [color=\"red\"]";
-                    else if(dashed_edges != nullptr && dashed_edges->count(pair_vertices))
-                        outfile << " [style=\"dashed\"]";
-                }
-                outfile << ";" << std::endl;
-            }
-        }
-    }
-    
-    outfile << "}" << std::endl;
-}
-
-typedef struct
-{
-    int length;
-    std::vector<int> path;
-}Length;
-
-
-/**
- * @brief Calculates the smallest path between two vertices using Dijkstra's algorithm, then, 
- //TODO Grafos de exemplo não ponderados com segmentation fault
- * 
- * @param source_id ID of the starting vertex
- * @param target_id ID of the target vertex
- */
-bool Graph::Dijkstra(int source_id, int target_id)
-{
-    // Verifies if the vertices exist in the graph (returns false -> not executed)
-    if(vertices.count(source_id) == 0 || vertices.count(target_id) == 0) {
-        std::cout << "ERROR: Dijkstra not executed, one or both of the vertices are not present in the graph" << std::endl;
-        return false;
-    }
-    
-    int n = vertices.size();
-
-    // Initializes non iterated vertices
-    std::vector<int> non_iterated;
-    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
-        Vertex *v = it->second;
-        if(v->getId() != source_id)
-            non_iterated.push_back(v->getId());
-    }
-    
-    // Initializes iterated vertices
-    std::vector<int> iterated;
-    iterated.push_back(source_id);
-
-    // Initializes vector of lengths and paths (called pi)
-    std::unordered_map<int, Length> pi;
-    for(std::unordered_map<int, Vertex*>::iterator it = vertices.begin(); it != vertices.end(); ++it) {
-        Vertex *v = it->second;
-        if(v->getId() == source_id) {
-            Length l;
-            l.length = 0;
-            pi.insert({v->getId(), l});
-        }
-        else {
-            Length l;
-            l.length = std::numeric_limits<int>::max();
-            pi.insert({v->getId(), l});
-        }
-    }
-    std::unordered_map<int, Edge*> edges = vertices[source_id]->getEdges();
-    for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
-        Edge *e = it->second;
-        pi[e->getTargetId()].length = e->getWeight();
-        pi[e->getTargetId()].path.push_back(source_id);
-        pi[e->getTargetId()].path.push_back(e->getTargetId());
-    }
-
-    // Algorithm
-    while(non_iterated.size() > 0) {
-        // Find j with minimal path cost in non_iterated
-        int j = 0;
-        int j_length = std::numeric_limits<int>::max();
-        int j_id = 0;
-        for(int i = 0 ; i < non_iterated.size(); i++) {
-            if(pi[non_iterated[i]].length < j_length) {
-                j = i;
-                j_id = non_iterated[j];
-                j_length = pi[j_id].length;
-            }
-        }
-        // Removes this j from the non_iterated
-        non_iterated.erase(non_iterated.begin() + j);
-
-        // Iterate through j adjacencies
-        std::unordered_map<int, Edge*> edges = vertices[j_id]->getEdges();
-        for(std::unordered_map<int, Edge*>::iterator it = edges.begin(); it != edges.end(); ++it) {
-            Edge *e = it->second;
-            int pi_aux;
-            if(pi[j_id].length != std::numeric_limits<int>::max())
-                pi_aux = pi[j_id].length + e->getWeight();
-            else
-                pi_aux = std::numeric_limits<int>::max();
-            if(pi_aux < pi[e->getTargetId()].length) {
-                pi[e->getTargetId()].length = pi_aux;
-                pi[e->getTargetId()].path = pi[j_id].path;
-                pi[e->getTargetId()].path.push_back(e->getTargetId());
-                bool non = false;
-                for(int i = 0 ; i < non_iterated.size(); i++){
-                    if(non_iterated[i] == e->getTargetId()) {
-                        non = true;
-                        break;
-                    }
-                }
-                if(!non)
-                    non_iterated.push_back(e->getTargetId());
-            }
-        }
-    }
-
-    std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
-    if(pi[target_id].path.size() > 0) {
-        std::cout << "  Path found by Dijkstra:" << std::endl;
-        std::cout << "      {";
-        for(int i = 0; i < pi[target_id].path.size() - 1; i++){
-            int x = pi[target_id].path[i], y = pi[target_id].path[i];
-            if(pi[target_id].path[i] < pi[target_id].path[i + 1]) {
-                y = pi[target_id].path[i + 1];
-                std::cout << "(" << x << ", " << y << ")";
-            }
-            else{
-                x = pi[target_id].path[i + 1];
-                std::cout << "(" << y << ", " << x << ")";
-            }
-            if(i < pi[target_id].path.size() - 2)
-                std::cout << ", ";
-            path->insert({x, y});
-        }
-        std::cout << "}" << std::endl;
-    }
-    //TODO Salvar arquivo baseado no nome fornecido na execução
-    saveToDot("dijkstra.dot", path);
-    delete path;
-
-    return true;
-}
-
 void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<int>& order)
 {
 
@@ -604,110 +694,12 @@ void Graph::auxTopologicalSorting(int id, std::map<int, int>& colors, std::list<
 }
 
 /**
- * @brief Calculates the smallest path between two vertices using Floyd's algorithm
- //TODO Salvar grafo em .dot seguindo alguma regra pro caminho mínimo (cor diferente da aresta talvez)
+ * @brief Prints out a topological sorting of the graph
  * 
- * @param source_id ID of the starting vertex
- * @param target_id ID of the target vertex
+ 
  */
-bool Graph::Floyd(int source_id, int target_id)
+void Graph::topologicalSorting()
 {
-    // Verifies if the vertices exist in the graph (returns false -> not executed)
-    if(vertices.count(source_id) == 0 || vertices.count(target_id) == 0) {
-        std::cout << "ERROR: Floyd not executed, one or both of the vertices are not present in the graph" << std::endl;
-        return false;
-    }
-    
-    int n = vertices.size();
-
-    Length** A = new Length*[n];
-    for(int i = 0; i < n; i++) {
-        A[i] = new Length[n];
-    }
-
-    // Creation of matrix A_0
-    for(int i = 0; i < n; i++){
-        for(int j = 0; j < n; j++) {
-            if(i != j) {
-                if(vertices.count(i) == 0){
-                    A[i][j].length = std::numeric_limits<int>::max();
-                }
-                else {
-                    if(vertices[i]->getEdges().count(j) == 0) {
-                        A[i][j].length = std::numeric_limits<int>::max();
-                    }
-                    else {
-                        A[i][j].length = vertices[i]->getEdges()[j]->getWeight(); 
-                        A[i][j].path.push_back(i);
-                        A[i][j].path.push_back(j);
-                    }                
-                }
-            }
-            else {
-                A[i][j].length = 0;
-            }
-        }
-    }
-
-    // Iterations through A matrix according to K index
-    for(int k = 0; k < n; k++) {
-        for(int i = 0; i < n; i++) {
-            for(int j = 0; j < n; j++) {
-                int A_calc;
-                if(i != j) {
-                    if(A[i][k].length != std::numeric_limits<int>::max() && A[k][j].length != std::numeric_limits<int>::max())
-                        A_calc = A[i][k].length + A[k][j].length;
-                    else
-                        A_calc = std::numeric_limits<int>::max();
-                    if(A[i][j].length > A_calc) {
-                        A[i][j].length = A_calc;
-                        A[i][j].path = A[i][k].path;
-                        for(int l = 1; l < A[k][j].path.size(); l++)
-                            A[i][j].path.push_back(A[k][j].path[l]);
-                    }
-                }
-            }
-        }
-    }
-
-    std::set<std::pair<int, int>> *path = new std::set<std::pair<int, int>>;
-    if(A[source_id][target_id].path.size() > 0) {
-        std::cout << "  Path found by Floyd:" << std::endl;
-        std::cout << "      {";
-        for(int i = 0; i < A[source_id][target_id].path.size() - 1; i++){
-            int x = A[source_id][target_id].path[i], y = A[source_id][target_id].path[i];
-            if(A[source_id][target_id].path[i] < A[source_id][target_id].path[i + 1]) {
-                y = A[source_id][target_id].path[i + 1];
-                std::cout << "(" << x << ", " << y << ")";
-            }
-            else{
-                x = A[source_id][target_id].path[i + 1];
-                std::cout << "(" << y << ", " << x << ")";
-            }
-            if(i < A[source_id][target_id].path.size() - 2)
-                std::cout << ", ";
-            path->insert({x, y});
-        }
-        std::cout << "}" << std::endl;
-    }
-    //TODO Salvar arquivo baseado no nome fornecido na execução
-    saveToDot("floyd.dot", path);
-    delete path;
-
-    // Deletion of used dynamic matrixes 
-    for(int i = 0; i < n; i++) {
-      delete [] A[i];    
-    }
-    delete [] A;
-
-    return true;
-}
-
-/**
- * @brief Prints the vertices in order according to the Breadth First Search algorithm
- * 
- */
-void Graph::topologicalSorting(){
 
     std::cout << "Ordenação topológica do grafo:" << std::endl;
     if (!this->directed) {
@@ -746,41 +738,3 @@ void Graph::topologicalSorting(){
     std::cout << std::endl;
 
 }
-
-// //Function that prints a set of edges belongs breadth tree
-
-// void Graph::breadthFirstSearch(std::ofstream &output_file){
-    
-// }
-
-
-
-// float Graph::floydMarshall(int idSource, int idTarget){
-    
-// }
-
-   
-
-// float Graph::dijkstra(int idSource, int idTarget){
-    
-// }
-
-// //function that prints a topological sorting
-// void topologicalSorting(){
-
-// }
-
-// void breadthFirstSearch(std::ofstream& output_file){
-
-// }
-
-// Graph* getVertexInduced(int* listIdVertexs){
-
-// }
-
-// Graph* agmKuskal(){
-
-// }
-// Graph* agmPrim(){
-
-// }
