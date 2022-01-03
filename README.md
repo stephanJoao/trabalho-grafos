@@ -46,12 +46,12 @@ Em que
 
 2. 
 
-3. Dijkstra: imprime o menor caminho entre dois vértices segundo o algoritmo de Dijkstra
+3. Dijkstra: imprime na tela e no aquivo dot o menor caminho entre dois vértices segundo o algoritmo de Dijkstra
 
-4. Floyd: imprime o menor caminho entre dois vértices segundo o algoritmo de Floyd
+4. Floyd: imprime na tela e no aquivo dot o menor caminho entre dois vértices segundo o algoritmo de Floyd
 
-5. MST_Kruskal: imprime os vértices da árvore geradora mínima segundo o algoritmo de Kruskal
+5. MST_Kruskal: imprime na tela e no aquivo dot os vértices da árvore geradora mínima segundo o algoritmo de Kruskal
 
-6. BFS: imprime o caminhamento em largura a partir de um vértice dado segundo o algoritmo Breadth First Search. 
+6. BFS: imprime em tela os vértices do caminhamento em largura a partir de um vértice dado segundo o algoritmo Breadth First Search e imprime no arquivo dot os vértices de retorno em vermelho
 
-7. topologicaoSorting: imprime uma ordenação topológica de um grafo acíclico e direcionado
+7. topologicaoSorting: imprime na tela uma ordenação topológica de um grafo acíclico e direcionado

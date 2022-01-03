@@ -8,8 +8,8 @@
 
 using namespace std;
 
-Graph* readGraph(ifstream& input_file, bool directed, bool weighted_edge, bool weighted_vertex)
-{    
+Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex)
+{
     //Variáveis para auxiliar na criação dos nós no Grafo
     int idNodeSource;
     int idNodeTarget;
@@ -20,36 +20,36 @@ Graph* readGraph(ifstream& input_file, bool directed, bool weighted_edge, bool w
     Graph *graph = new Graph(order, directed, weighted_edge, weighted_vertex);
     //Leitura de arquivo
 
-    if(!graph->isWeightedEdge() && !graph->isWeightedVertex())
+    if (!graph->isWeightedEdge() && !graph->isWeightedVertex())
     {
-        while(input_file >> idNodeSource >> idNodeTarget)
+        while (input_file >> idNodeSource >> idNodeTarget)
         {
             graph->insertEdge(idNodeSource, idNodeTarget);
         }
-    } 
-    else if(graph->isWeightedEdge() && !graph->isWeightedVertex() )
+    }
+    else if (graph->isWeightedEdge() && !graph->isWeightedVertex())
     {
         float edgeWeight;
 
-        while(input_file >> idNodeSource >> idNodeTarget >> edgeWeight)
+        while (input_file >> idNodeSource >> idNodeTarget >> edgeWeight)
         {
             graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight);
         }
-    } 
-    else if(graph->isWeightedVertex() && !graph->isWeightedEdge())
+    }
+    else if (graph->isWeightedVertex() && !graph->isWeightedEdge())
     {
         float nodeSourceWeight, nodeTargetWeight;
 
-        while(input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight) 
+        while (input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight)
         {
             graph->insertEdge(idNodeSource, idNodeTarget, 1, nodeSourceWeight, nodeTargetWeight);
         }
-    } 
-    else 
+    }
+    else
     {
         float nodeSourceWeight, nodeTargetWeight, edgeWeight;
 
-        while(input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight) 
+        while (input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight)
         {
             graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight, nodeSourceWeight, nodeTargetWeight);
         }
@@ -64,21 +64,21 @@ void printOptions()
 {
     cout << "MENU" << endl;
     cout << "----" << endl;
-    cout << "[1] Subgrafo induzido por conjunto de vértices" << endl;
-    cout << "[2] Subgrafo induzido por conjunto de vértices" << endl;
-    cout << "[3] Caminho Mínimo entre dois vértices - Dijkstra" << endl;
-    cout << "[4] Caminho Mínimo entre dois vértices - Floyd" << endl;
-    cout << "[5] Árvore Geradora Mínima de Kruskal" << endl;
-    cout << "[6] Imprimir caminhamento em largura" << endl;
-    cout << "[7] Imprimir ordenacao topológica" << endl;
-    cout << "[0] Sair" << endl;
+    cout << "[1] Vertex induced subgraph (Direct transitive closure)" << endl;
+    cout << "[2] Vertex induced subgraph (Indirect transitive closure)" << endl;
+    cout << "[3] Shortest path between two vertices (Dijkstra)" << endl;
+    cout << "[4] Shortest path between two vertices (Dijkstra)" << endl;
+    cout << "[5] Minimum spanning tree of a graph (Kruskal)" << endl;
+    cout << "[6] Breadth-first search of a graph" << endl;
+    cout << "[7] Topological sorting " << endl;
+    cout << "[0] Leave menu" << endl;
 }
 
-int main(int argc, char const *argv[]) 
+int main(int argc, char const *argv[])
 {
     // Verifies if all parameters have been provided
-    
-    if (argc != 6) 
+
+    if (argc != 6)
     {
         cout << "ERROR: Expecting: ./<program_name> <input_file> <output_file> <directed> <weighted_edge> <weighted_vertex> " << endl;
         return 1;
@@ -97,22 +97,27 @@ int main(int argc, char const *argv[])
     std::cout << "Weighted vertex: " << weighted_vertex << std::endl;
 
     // Read of input_file
-    
+
     ifstream input_file;
     input_file.open(input_file_name, ios::in);
 
     Graph *g;
-    if(input_file.is_open())
+    if (input_file.is_open())
     {
         g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
         g->setOutfileName(output_file_name);
     }
-    
+    else
+    {
+        std::cerr << "Input file not found!" << std::endl;
+        exit(1);
+    }
+
     // Menu
 
     int choice, a, b;
     mkdir("output", 0777);
-    do 
+    do
     {
         cout << "Options..." << endl;
         printOptions();
@@ -120,42 +125,41 @@ int main(int argc, char const *argv[])
 
         switch (choice)
         {
-            case 0:
-                /* code */
-                break;
-            case 1:
-                /* A */
-                break;
-            case 2:
-                /* B */
-                break;
-            case 3:
-                cout << "Type the vertices for the algorithm: ";
-                cin >> a >> b;
-                g->Dijkstra(a, b); 
-                break;
-            case 4:
-                cout << "Type the vertices for the algorithm: ";
-                cin >> a >> b;
-                g->Floyd(a, b); 
-                break;
-            case 5:
-                g->MST_Kruskal();
-                break;
-            case 6:
-                cout << "Type the vertex for the algorithm: ";
-                cin >> a;
-                g->BFS(a);
-                break;
-            case 7:
-                g->topologicalSorting();
-                break;
-            default:
-                break;
+        case 0:
+            /* code */
+            break;
+        case 1:
+            /* A */
+            break;
+        case 2:
+            /* B */
+            break;
+        case 3:
+            cout << "Type the vertices for the algorithm: ";
+            cin >> a >> b;
+            g->Dijkstra(a, b);
+            break;
+        case 4:
+            cout << "Type the vertices for the algorithm: ";
+            cin >> a >> b;
+            g->Floyd(a, b);
+            break;
+        case 5:
+            g->MST_Kruskal();
+            break;
+        case 6:
+            cout << "Type the vertex for the algorithm: ";
+            cin >> a;
+            g->BFS(a);
+            break;
+        case 7:
+            g->topologicalSorting();
+            break;
+        default:
+            break;
         }
-    }
-    while(choice != 0);
-    
+    } while (choice != 0);
+
     delete g;
 
     return 0;
