@@ -67,7 +67,7 @@ void printOptions()
     cout << "[1] Vertex induced subgraph (Direct transitive closure)" << endl;
     cout << "[2] Vertex induced subgraph (Indirect transitive closure)" << endl;
     cout << "[3] Shortest path between two vertices (Dijkstra)" << endl;
-    cout << "[4] Shortest path between two vertices (Dijkstra)" << endl;
+    cout << "[4] Shortest path between two vertices (Floyd)" << endl;
     cout << "[5] Minimum spanning tree of a graph (Kruskal)" << endl;
     cout << "[6] Breadth-first search of a graph" << endl;
     cout << "[7] Topological sorting " << endl;
@@ -129,7 +129,9 @@ int main(int argc, char const *argv[])
             /* code */
             break;
         case 1:
-            /* A */
+            cout << "Insert the starting vertex: ";
+            cin >> a;
+            g->DirectTransitiveClosure(a);
             break;
         case 2:
             /* B */

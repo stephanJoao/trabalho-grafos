@@ -305,34 +305,42 @@ void Graph::DirectTransitiveClosure(int id)
         {
             int target_id = itE->second->getTargetId();
             std::pair<int, int> pair_vertices(id, target_id);
-
             if (visited->count(pair_vertices) == 0)
             {
                 visited->insert(pair_vertices);
+                // std::cout << "(" << pair_vertices.first << ", " << pair_vertices.second << "), " << std::endl;
             }
             this->AuxDirectTransitiveClosure(target_id, visited);
         }
+
+        std::cout << "Fecho transitivo direto: " << std::endl;
+        std::cout << "  { ";
+        for (std::set<std::pair<int, int>>::iterator it = visited->begin(); it != visited->end(); ++it)
+            std::cout << "(" << it->first << ", " << it->second << "), ";
+        std::cout << " }\n\n";
+
+        saveToDot("DirectTransitiveClosure", visited);
     }
     else
     {
+        std::cout << "Grafo não direcionado" << std::endl;
         return;
     }
 }
-void Graph::AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *)
+void Graph::AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *visited)
 {
-    std::set<std::pair<int, int>> *visited = new std::set<std::pair<int, int>>;
-
-    // Check for unvisited vertices in adjacency list and enqueue them
-    std::unordered_map<int, Edge *> edges = vertices[id]->getEdges();
+    // Check for unvisited vertices in adjacency list 
+    std::unordered_map<int, Edge*> edges = vertices[id]->getEdges();
     for (std::unordered_map<int, Edge *>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
     {
         int target_id = itE->second->getTargetId();
         std::pair<int, int> pair_vertices(id, target_id);
-
         if (visited->count(pair_vertices) == 0)
         {
+            // std::cout << "(" << pair_vertices.first << ", " << pair_vertices.second << "), " << std::endl;
             visited->insert(pair_vertices);
         }
+        
         this->AuxDirectTransitiveClosure(target_id, visited);
     }
 }
@@ -342,13 +350,10 @@ void Graph::AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *)
  * 
  * @param id ID of the vertex to find transitive closure
  */
-void Graph::IndirectTransitiveClosure(int id)
-{
-}
+
 
 /**
- * @brief Calculates the smallest path between two vertices using Dijkstra's algorithm, then, 
- //TODO Grafos de exemplo não ponderados com segmentation fault
+ * @brief Calculates the smallest path between two vertices using Dijkstra's algorithm, then appends it in a .dot file
  * 
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
@@ -477,7 +482,6 @@ bool Graph::Dijkstra(int source_id, int target_id)
         }
         std::cout << "}" << std::endl;
     }
-    //TODO Salvar arquivo baseado no nome fornecido na execução
     saveToDot("Dijkstra", path);
     delete path;
 
@@ -485,7 +489,7 @@ bool Graph::Dijkstra(int source_id, int target_id)
 }
 
 /**
- * @brief Calculates the smallest path between two vertices using Floyd's algorithm
+ * @brief Calculates the smallest path between two vertices using Floyd's algorithm, then appends it in a .dot file
  * 
  * @param source_id ID of the starting vertex
  * @param target_id ID of the target vertex
@@ -787,7 +791,7 @@ bool Graph::BFS(int id)
     return true;
 }
 
-void Graph::auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order)
+void Graph::auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order, bool *dag)
 {
 
     // Iterator for adjacent list
@@ -807,12 +811,13 @@ void Graph::auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<
         if (colors.at(target_id) == 0)
         {
             // adjascent vertex unvisited
-            auxTopologicalSorting(target_id, colors, order);
+            auxTopologicalSorting(target_id, colors, order, dag);
         }
         else if (colors.at(target_id) == 1)
         {
             // graph has a return edge so can't have a topological sorting
-            std::cout << "Grafo não é um DAG! (grafo ciclico em (" << id << ", " << target_id << ")" << std::endl;
+            // std::cout << "Grafo não é um DAG! (grafo ciclico em (" << id << ", " << target_id << ")" << std::endl;
+            *dag = false;
             return;
         }
     }
@@ -829,6 +834,8 @@ void Graph::auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<
  */
 void Graph::topologicalSorting()
 {
+
+    bool dag = true;
 
     std::cout << "Ordenação topológica do grafo:" << std::endl;
     if (!this->directed)
@@ -859,7 +866,12 @@ void Graph::topologicalSorting()
         if (colors.at(it->second->getId()) == 0)
         {
             /* std::cout << it->second->getId() << " eh branco" << std::endl; */
-            auxTopologicalSorting(it->second->getId(), colors, topologicalOrder);
+            auxTopologicalSorting(it->second->getId(), colors, topologicalOrder, &dag);
+        }
+        if (!dag)
+        {
+            std::cout << "Grafo não é um DAG!" << std::endl;
+            return;
         }
     }
 

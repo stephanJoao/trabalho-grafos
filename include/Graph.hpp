@@ -55,8 +55,6 @@ public:
 
     void DirectTransitiveClosure(int id);
     void AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *);
-    void IndirectTransitiveClosure(int id);
-    void AuxIndirectTransitiveClosure(int id, std::set<std::pair<int, int>> *);
 
     bool Dijkstra(int source_id, int target_id);
     bool Floyd(int source_id, int target_id);
@@ -66,7 +64,9 @@ public:
     bool MST_Kruskal();
     bool BFS(int id);
     void topologicalSorting();
-    void auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order);
+    void auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order, bool *dag);
+
+    
 };
 
 #endif // GRAPH_H_INCLUDED

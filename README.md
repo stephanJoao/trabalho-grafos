@@ -42,16 +42,17 @@ Em que
 * `pesoVertice`: 0 ou 1 (se os vértices têm peso)
 
 ## Funcionalidades
-1. 
 
-2. 
+Todos as funcionalidades, exceto a ordenação topológica apresentarão saídas no arquivo .dot (com nome especificado pelo comando de execução), os destaques dados no arquivo .dot às arestas de cada algoritmo serão explicados abaixo.
 
-3. Dijkstra: imprime na tela e no aquivo dot o menor caminho entre dois vértices segundo o algoritmo de Dijkstra
+1. **DirectTransitiveClosure**: imprime na tela o fecho transitivo direto do vértice fornecido pelo usuário (o arquivo .dot destaca as arestas do subgrafo vértice induzido pelo conjunto com a cor vermelha)
 
-4. Floyd: imprime na tela e no aquivo dot o menor caminho entre dois vértices segundo o algoritmo de Floyd
+2. **Dijkstra**: imprime na tela o menor caminho entre dois vértices utilizando o algoritmo de Dijkstra (arestas do caminho destacadas com a cor vermelha)
 
-5. MST_Kruskal: imprime na tela e no aquivo dot os vértices da árvore geradora mínima segundo o algoritmo de Kruskal
+4. **Floyd**: imprime na tela o menor caminho entre dois vértices utilizando o algoritmo de Floyd (arestas do caminho destacadas com a cor vermelha)
 
-6. BFS: imprime em tela os vértices do caminhamento em largura a partir de um vértice dado segundo o algoritmo Breadth First Search e imprime no arquivo dot os vértices de retorno em vermelho
+5. **MST_Kruskal**: imprime na tela e no aquivo .dot os vértices da árvore geradora mínima utilizando o algoritmo de Kruskal (arestas da árvore em vermelho)
 
-7. topologicaoSorting: imprime na tela uma ordenação topológica de um grafo acíclico e direcionado
+6. **BFS**: imprime em tela os vértices do caminhamento em largura a partir de um vértice dado segundo o algoritmo Breadth First Search e imprime no arquivo .dot (arestas de retorno em vermelho)
+
+7. **topologicalSorting**: imprime na tela uma ordenação topológica de um grafo acíclico e direcionado (GAD)(sem saída .dot)
