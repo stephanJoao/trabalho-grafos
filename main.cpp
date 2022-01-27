@@ -4,9 +4,31 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#ifdef __unix__
+
+    #define OS_Windows 0
+
+#elif defined(_WIN32) || defined(WIN32)
+
+    #define OS_Windows 1
+    #include <windows.h>
+	#include <direct.h>
+
+#endif
+
 #include "include/Graph.hpp"
 
 using namespace std;
+
+void createDirectory(const char* name) 
+{
+//    #ifdef OS_Windows
+//        _mkdir(name);
+//    #else
+//        mkdir(name, 777); 
+//    #endif
+    mkdir(name);
+}
 
 Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex)
 {
@@ -116,7 +138,8 @@ int main(int argc, char const *argv[])
     // Menu
 
     int choice, a, b;
-    mkdir("output", 0777);
+	createDirectory("output");
+    // mkdir("output", 0777);
     do
     {
         cout << "Options..." << endl;
