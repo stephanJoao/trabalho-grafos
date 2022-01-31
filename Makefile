@@ -1,20 +1,55 @@
-all: program clear
-	@echo Compilando
+# Usage:
+# make        # compile all binary
+# make clean  # remove all binaries and objects
 
-main.o: main.cpp include/Graph.hpp
-	@g++ -c main.cpp -g
+#* Variables
 
-graph.o: src/Graph.cpp include/Graph.hpp
-	@g++ -c src/Graph.cpp -g
+# Name of the project
+PROJ_NAME = execGrupo5
 
-vertex.o: src/Vertex.cpp include/Vertex.hpp
-	@g++ -c src/Vertex.cpp -g
-	
-edge.o: src/Edge.cpp include/Edge.hpp
-	@g++ -c src/Edge.cpp -g
+# .cpp files
+CPP_SOURCE = ${wildcard ./src/*.cpp}
 
-program: main.o edge.o vertex.o graph.o
-	@g++ -o execGrupo5 main.o Edge.o Vertex.o Graph.o -g
+# .hpp files
+HPP_SOURCE = ${wildcard ./include/*.hpp}
 
-clear:
-	@rm *.o
+# Object files
+AUX_OBJ = ${subst .cpp,.o,${subst src,objects,${CPP_SOURCE}}}
+
+# Adds main separately
+CPP_SOURCE += main.cpp
+AUX_OBJ += ./objects/main.o
+OBJ = ${filter-out main.o,${AUX_OBJ}}
+
+# Compiler
+CC = g++
+
+# Compiler flags
+CC_FLAGS = -c -g
+
+
+#* Compilation and linking
+
+all: objectsFolder ${PROJ_NAME}
+
+${PROJ_NAME}: ${OBJ}
+	@${CC} $^ -o $@
+
+./objects/%.o: ./src/%.cpp ./include/%.hpp
+	@${CC} $< ${CC_FLAGS} -o $@
+
+./objects/main.o: main.cpp ${H_SOURCE}
+	@${CC} $< ${CC_FLAGS} -o $@
+
+objectsFolder:
+	@mkdir -p objects
+
+clean:
+	@rm -rf ./objects/*.o
+
+print:
+	@echo ${CPP_SOURCE}
+	@echo ${HPP_SOURCE}
+	@echo ${OBJ}
+
+.PHONY: all clean
