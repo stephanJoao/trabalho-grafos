@@ -14,58 +14,59 @@
 class Graph
 {
     // Attributes
-private:
-    int order;
-    int number_edges;
-    bool directed;
-    bool weighted_edge;
-    bool weighted_vertex;
-    std::unordered_map<int, Vertex *> vertices;
-    std::string outfile_name;
+    private:
+        int order;
+        int number_edges;
+        bool directed;
+        bool weighted_edge;
+        bool weighted_vertex;
+        std::unordered_map<int, Vertex *> vertices;
+        
+        std::string outfile_name;
 
     // Methods
-private:
-public:
-    // Constructors and destructors
+    private:
+    
+    public:
+        // Constructors and destructors
 
-    Graph(int order, bool directed = false, bool weighted_edge = false, bool weighted_vertex = false);
-    ~Graph();
+        Graph(int order, bool directed = false, bool weighted_edge = false, bool weighted_vertex = false);
+        ~Graph();
 
-    // Getters and setters
+        // Getters and setters
 
-    int getOrder();
-    int getNumberEdges();
-    bool isDirected();
-    bool isWeightedEdge();
-    bool isWeightedVertex();
-    Vertex *getVertex(int id);
-    void setOutfileName(std::string outfile_name);
+        int getOrder();
+        int getNumberEdges();
+        bool isDirected();
+        bool isWeightedEdge();
+        bool isWeightedVertex();
+        Vertex *getVertex(int id);
+        void setOutfileName(std::string outfile_name);
 
-    // Other methods
+        // Other methods
 
-    void insertVertex(int id, float weight = 1);
-    void insertEdge(int id, int target_id, float edge_weight = 1, float source_vertex_weight = 1, float target_vertex_weight = 1);
-    void insertMissingVertices();
-    bool searchVertex(int id);
-    void getInfo();
-    void printAdjList();
-    void saveToDot(std::string function, std::set<std::pair<int, int>> *red_edges = nullptr, std::set<std::pair<int, int>> *gray_edges = nullptr);
+        void insertVertex(int id, float weight = 1);
+        void insertEdge(int id, int target_id, float edge_weight = 1, float source_vertex_weight = 1, float target_vertex_weight = 1);
+        void insertMissingVertices();
+        bool searchVertex(int id);
+        void getInfo();
+        void printAdjList();
+        void saveToDot(std::string function, std::set<std::pair<int, int>> *red_edges = nullptr, std::set<std::pair<int, int>> *gray_edges = nullptr);
 
-    // Assignment especific methods
+        // Assignment especific methods
 
-    void DirectTransitiveClosure(int id);
-    void AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *);
+        void DirectTransitiveClosure(int id);
+        void AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *);
 
-    bool Dijkstra(int source_id, int target_id);
-    bool Floyd(int source_id, int target_id);
+        bool Dijkstra(int source_id, int target_id);
+        bool Floyd(int source_id, int target_id);
 
-    // Prim
+        // Prim
 
-    bool MST_Kruskal();
-    bool BFS(int id);
-    void topologicalSorting();
-    void auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order, bool *dag);
-
+        bool MST_Kruskal();
+        bool BFS(int id);
+        void topologicalSorting();
+        void auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order, bool *dag);
     
 };
 

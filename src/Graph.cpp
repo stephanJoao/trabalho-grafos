@@ -327,6 +327,7 @@ void Graph::DirectTransitiveClosure(int id)
         return;
     }
 }
+
 void Graph::AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *visited)
 {
     // Check for unvisited vertices in adjacency list 
@@ -344,13 +345,6 @@ void Graph::AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *vi
         this->AuxDirectTransitiveClosure(target_id, visited);
     }
 }
-
-/**
- * @brief Generates a vertex induced graph from the indirect transitive closure
- * 
- * @param id ID of the vertex to find transitive closure
- */
-
 
 /**
  * @brief Calculates the smallest path between two vertices using Dijkstra's algorithm, then appends it in a .dot file
@@ -499,7 +493,7 @@ bool Graph::Floyd(int source_id, int target_id)
     // Verifies if the vertices exist in the graph (returns false -> not executed)
     if (vertices.count(source_id) == 0 || vertices.count(target_id) == 0)
     {
-        std::cerr << "ERROR: Floyd not executed, one or both of the vertices are not present in the graph" << std::endl;
+        std::cerr << "ERROR: Floyd not executed, one or both of the vertices are not present in the graph." << std::endl;
         return false;
     }
 
@@ -646,7 +640,7 @@ bool Graph::MST_Kruskal()
 {
     if (vertices.empty())
     {
-        std::cerr << "ERROR: Kruskal not executed, vertex not found" << std::endl;
+        std::cerr << "ERROR: Kruskal not executed, vertex not found." << std::endl;
         return false;
     }
 
@@ -676,7 +670,7 @@ bool Graph::MST_Kruskal()
     sorted_edges.sort();   // Sort the edges in asceding order according to their weights
     sorted_edges.unique(); // Remove duplicates (in undirected graph)
 
-    std::cout << "    {";
+    std::cout << "      {";
     i = 0;
     while (i < order - 1 && !sorted_edges.empty())
     {
@@ -688,9 +682,9 @@ bool Graph::MST_Kruskal()
         int greatest = subsets.at(e.b);
         if (smallest != greatest)
         {
-            std::cout << "(" << e.a << ", " << e.b << ") "; //print to screen
+            std::cout << "(" << e.a << ", " << e.b << ")"; // Print to screen
             mst_edges->insert(std::pair<int, int>(e.a, e.b));
-            cost += e.weight; // sum up the edge weight to the MST cost
+            cost += e.weight; // Sum up the edge weight to the MST cost
 
             if (greatest < smallest)
                 std::swap(smallest, greatest);
@@ -701,12 +695,13 @@ bool Graph::MST_Kruskal()
                 if (it->second == greatest)
                     it->second = smallest;
             }
+            if(i + 1 != order - 1)
+                std::cout << ", ";
             i++;
         }
     }
+    std::cout << "}" << std::endl << "  Cost: " << cost << std::endl;
 
-    std::cout << "}" << std::endl
-              << "Cost: " << cost << std::endl;
     saveToDot("Kruskal", mst_edges);
 
     delete mst_edges;
@@ -749,7 +744,7 @@ bool Graph::BFS(int id)
     // Enqueue current vertex and mark it as "to visit"
     toVisit.push(id);
 
-    std::cout << "    ";
+    std::cout << "      ";
     while (!toVisit.empty())
     {
         // Dequeue top vertex in queue
@@ -793,7 +788,6 @@ bool Graph::BFS(int id)
 
 void Graph::auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order, bool *dag)
 {
-
     // Iterator for adjacent list
     std::unordered_map<int, Edge *>::iterator itE;
 
@@ -837,10 +831,10 @@ void Graph::topologicalSorting()
 
     bool dag = true;
 
-    std::cout << "Ordenação topológica do grafo:" << std::endl;
+    std::cout << "  Ordenação topológica do grafo:" << std::endl;
     if (!this->directed)
     {
-        std::cout << "Grafo não é um DAG! (não direcionado)" << std::endl;
+        std::cout << "ERROR: Graph is not a DAG. (undirected)" << std::endl;
         return;
     }
 
@@ -870,11 +864,12 @@ void Graph::topologicalSorting()
         }
         if (!dag)
         {
-            std::cout << "Grafo não é um DAG!" << std::endl;
+            std::cout << "ERROR: Graph is not a DAG." << std::endl;
             return;
         }
     }
 
+    std::cout << "      ";
     while (!topologicalOrder.empty())
     {
         std::cout << topologicalOrder.front() << " ";
