@@ -13,11 +13,74 @@ Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
     //Variáveis para auxiliar na criação dos nós no Grafo
     int idNodeSource;
     int idNodeTarget;
+
+    int node_id, node_weight;
+    
+    int clusters;
     int order;
-    input_file >> order;
+    
+    string line;
+    
+    // Skips lines
+    for(int i = 0; i < 3; i++)
+        getline(input_file, line);
+    for(int i = 0; i < 4; i++)
+        getline(input_file, line, ' ');
+
+    // Reads number of clusters
+    clusters = stoi(line);    
+    cout << "Clusters: " << clusters << endl;
+
+    // Skips lines
+    for(int i = 0; i < 2; i++)
+        getline(input_file, line);
+    for(int i = 0; i < 2; i++)
+        getline(input_file, line, ' ');
+    
+    // Reads order of the graph
+    order = stoi(line);
+    cout << "Order: " << order << endl;
+
+    // Reads nodes and node weight
+    for(int i = 0; i < 6; i++)
+        getline(input_file, line);
+    for(int i = 0; i < order; i++) {
+        input_file >> node_id >> node_weight;
+        printf("Node:%4d", node_id);
+        printf(" Weight:%4d\n", node_weight);
+    }
+
+    for(int i = 0; i < 5; i++)
+        getline(input_file, line);
+
+    for(int i = 0; i < 1; i++) {
+        int source, target;
+        int start, end, pos = 0;
+        getline(input_file, line);
+                
+        while(pos < line.size()) {
+            start = line.find('(', pos);
+            end = line.find(',', start);
+            // Gets first node of the edge
+            source = stoi(line.substr(start + 1, end));
+            cout << "Source: " << source << endl;
+            // Fix positions
+            start = end;
+            end = line.find(')', start);
+            // Gets second node of the edge
+            target = stoi(line.substr(start + 1, end));
+            cout << "Target: " << target << endl;
+            // Fix position
+            pos = end + 1;
+        }
+        
+        
+        //cout << line << endl;
+    }
 
     //Criando objeto grafo
-    Graph *graph = new Graph(order, directed, weighted_edge, weighted_vertex);
+    Graph *graph = new Graph(0, 0, 0, 0);
+    /*
     //Leitura de arquivo
 
     if (!graph->isWeightedEdge() && !graph->isWeightedVertex())
@@ -56,7 +119,7 @@ Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
     }
 
     graph->insertMissingVertices();
-
+    */
     return graph;
 }
 
@@ -115,6 +178,7 @@ int main(int argc, char const *argv[])
 
     // Menu
 
+    /*
     int choice, a, b;
     mkdir("output", 0777);
     do
@@ -126,7 +190,7 @@ int main(int argc, char const *argv[])
         switch (choice)
         {
         case 0:
-            /* code */
+            // code 
             break;
         case 1:
             cout << "Insert the starting vertex: ";
@@ -134,7 +198,7 @@ int main(int argc, char const *argv[])
             g->DirectTransitiveClosure(a);
             break;
         case 2:
-            /* B */
+            // B 
             break;
         case 3:
             cout << "Type the vertices for the algorithm: ";
@@ -161,6 +225,7 @@ int main(int argc, char const *argv[])
             break;
         }
     } while (choice != 0);
+    */
 
     delete g;
 
