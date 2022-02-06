@@ -103,21 +103,20 @@ void Graph::insertEdge(int id, int target_id, float edge_weight, float source_ve
 {
     if (id == target_id)
     {
-        std::cerr << "Vertices cannot have equal ID! (Selfloop not allowed)" << id << std::endl;
+        std::cerr << "ERROR: Vertices cannot have equal ID! (Selfloop not allowed)" << id << std::endl;
         return;
     }
 
-    if (id >= order)
+    if (id > order)
     {
+        std::cout << "ERROR: Changed the order, this is wrong!!!" << std::endl;
         order = id;
     }
-    if (target_id >= order)
+    if (target_id > order)
     {
+        std::cout << "ERROR: Changed the order, this is wrong!!!" << std::endl;
         order = target_id;
     }
-
-    insertVertex(id, source_vertex_weight);
-    insertVertex(target_id, target_vertex_weight);
 
     if (this->directed)
     {
@@ -280,7 +279,7 @@ void Graph::saveToDot(std::string function, std::set<std::pair<int, int>> *red_e
     outfile << "}" << std::endl;
 }
 
-//* Assignment specific methods
+//* First assignment specific methods
 
 typedef struct
 {
@@ -877,4 +876,206 @@ void Graph::topologicalSorting()
     }
 
     std::cout << std::endl;
+}
+
+//* Second assignment specific methods
+
+typedef struct 
+{
+    int cluster;
+    int source_id;
+    int target_id;
+    int increase_gap;
+
+    friend bool operator<(Candidate c1, Candidate c2) 
+    {
+        return c1.increase_gap < c2.increase_gap;
+    }
+
+}Candidate; 
+
+typedef struct
+{
+    std::vector<int> vertices_ids;
+    int higher;
+    int lower;
+}Solution;
+
+void removeByValue(std::vector<int> &v, int value) 
+{
+    int i;
+    for(i = 0; i < v.size(); i++) {
+        if(v[i] == value)
+            break;
+    }
+    v.erase(v.begin() + i);
+}
+
+void printSolutions(Solution solutions[], int clusters) 
+{
+    std::cout << "\nSolutions" << std::endl;
+    for(int i = 0; i < clusters; i++) {
+        printf("%c = {", 'a'+i);   
+        for(int j = 0; j < solutions[i].vertices_ids.size(); j++) {
+            std::cout << solutions[i].vertices_ids[j] << ", ";        
+        }
+        std::cout << "}" << "   Cost = " << (solutions[i].higher - solutions[i].lower) << "\n\n";
+    }
+}
+
+void printAvailable(std::vector<int> v) 
+{
+    std::cout << "Indexes: ";
+    for(int i = 0; i < v.size(); i++)
+    {
+        std::cout << v[i] << " ";
+    }
+    std::cout << "\n";
+}
+
+void printCandidates(std::vector<Candidate> v){
+    std::cout << "Candidates: ";
+    for(int i = 0; i < v.size(); i++)
+    {
+        std::cout << "Candidate: " << v[i].target_id << ", cluster: " << v[i].cluster << "\n";
+    }
+    std::cout << "\n";
+}
+
+int Graph::Greedy(int clusters, float alfa) 
+{
+    /*
+     * Creates Vector of available vertices
+     */
+    std::vector<int> available;
+    for(int i = 1; i <= order; i++)
+        available.push_back(i);
+    
+    /*
+     * Create empty solutions
+     */
+    Solution solutions[clusters];
+
+    /*
+     * Candidates list
+     */
+    std::vector<Candidate> candidates;
+
+    /*
+     * Create initial solution
+     */
+    int cluster_interval = this->order / clusters;
+    for(int i = 0; i < clusters; i++)
+    {        
+        int id = (i * cluster_interval) + 1;
+        solutions[i].vertices_ids.push_back(id);
+        removeByValue(available, id);
+        solutions[i].higher = vertices[id]->getWeight();
+        solutions[i].lower = vertices[id]->getWeight();
+    }
+
+    /*
+     * Print to check if everything is correct
+     */
+    printSolutions(solutions, clusters);
+    printAvailable(available);
+
+    /*
+     * First update in candidates list
+     */
+    for(int i = 0; i < clusters; i++) 
+    {        
+        for(int j = 0; j < solutions[i].vertices_ids.size(); j++) 
+        {
+            int current_vertex_id = solutions[i].vertices_ids[j];
+            std::unordered_map<int, Edge *> edges = vertices[current_vertex_id]->getEdges();
+            for (std::unordered_map<int, Edge *>::iterator it = edges.begin(); it != edges.end(); ++it)
+            {
+                Edge *e = it->second;
+                
+                // Instantiate candidate
+                Candidate c;
+                c.cluster = i;
+                c.source_id = current_vertex_id;
+                c.target_id = e->getTargetId();
+                
+                int weigth = vertices[e->getTargetId()]->getWeight();
+                int lower_weigth = solutions[i].lower;
+                int higher_weigth = solutions[i].higher;
+                
+                if(weigth < lower_weigth) {
+                    solutions[i].lower = vertices[e->getTargetId()]->getWeight();
+                    c.increase_gap = abs(weigth - lower_weigth);
+                }
+                else if(weigth > higher_weigth) {
+                    solutions[i].higher = vertices[e->getTargetId()]->getWeight();
+                    c.increase_gap = abs(weigth - higher_weigth);
+                }
+                else
+                    c.increase_gap = 0;
+
+                // Adds to vector
+                candidates.push_back(c);
+            }
+        }        
+    }
+
+    /*
+     * Print to check if everything is correct
+     */
+    printCandidates(candidates);
+
+    
+}
+
+
+// Quicksor para ordenar vetor de candidatos
+// *Particionamento para Quicksort
+template <typename T>
+int particionamento(std::vector<T> vet, int primeiro, int ultimo) {
+    int posicaoPivo = (primeiro + ultimo) / 2;
+    TIPO pivo = vet[posicaoPivo];
+    int i = primeiro;
+    int j = ultimo;
+    while(i <= j) {
+        while(vet[i] < pivo) {
+            comparacoes++;
+            i++;
+        }
+        while(vet[j] > pivo) {
+            comparacoes++;
+            j--;
+        }
+        if(i <= j) {
+            comparacoes++;
+            movimentacoes++;
+            troca(i, j);
+            i++;
+            j--;
+        }
+    }
+    return i;
+}
+
+// *Quicksort auxiliar
+template <typename T>
+void quickSortAux(std::vector<T> vet, int primeiro, int ultimo) {
+    if(primeiro < ultimo) {
+        int part = particionamento(primeiro, ultimo);
+        quickSortAux(primeiro, part - 1);
+        quickSortAux(part, ultimo);
+    }
+}
+
+// *Quicksort
+template <typename T>
+void quickSort(std::vector<T> vet) {
+    quickSortAux(0, vet.size() - 1);
+}
+
+template <typename T>
+void troca(int i, int j) {
+    TIPO aux = vet[i];            
+    vet[i] = vet[j];
+    vet[j] = aux;
 }

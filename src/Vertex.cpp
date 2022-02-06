@@ -77,7 +77,7 @@ void Vertex::insertEdge(int target_id, float weight)
         edges.insert({target_id, e});
     }
     else
-        std::cout << id << " -> " << target_id << " já existe" << std::endl;
+        std::cout << "WARNING: " << id << " -> " << target_id << " already exists" << std::endl;
 }
 
 /**

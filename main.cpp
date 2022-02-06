@@ -10,14 +10,13 @@ using namespace std;
 
 Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex)
 {
-    //Variáveis para auxiliar na criação dos nós no Grafo
-    int idNodeSource;
-    int idNodeTarget;
+    Graph *graph;
 
-    int node_id, node_weight;
-    
     int clusters;
     int order;
+
+    int node_id, node_weight;
+    int source, target;        
     
     string line;
     
@@ -41,85 +40,62 @@ Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
     order = stoi(line);
     cout << "Order: " << order << endl;
 
+    // Creates graph object
+    graph = new Graph(order, directed, weighted_edge, weighted_vertex);
+
     // Reads nodes and node weight
     for(int i = 0; i < 6; i++)
         getline(input_file, line);
-    for(int i = 0; i < order; i++) {
+    for(int i = 0; i < order; i++) 
+    {
         input_file >> node_id >> node_weight;
-        printf("Node:%4d", node_id);
-        printf(" Weight:%4d\n", node_weight);
-    }
+        // printf("Node:%4d", node_id);
+        // printf(" Weight:%4d\n", node_weight);
+        graph->insertVertex(node_id, node_weight);
+    }   
 
+    int cont = 0;
+
+    // Reads edges
     for(int i = 0; i < 5; i++)
         getline(input_file, line);
-
-    for(int i = 0; i < 1; i++) {
-        int source, target;
+    for(int i = 0; i < order; i++) 
+    {
         int start, end, pos = 0;
         getline(input_file, line);
                 
-        while(pos < line.size()) {
+        // cout << "Line size: " << line.size() << endl;
+        // cout << "Last char: " << line[line.size() - 1] << endl;
+        while(pos < line.size()) 
+        {
             start = line.find('(', pos);
+            if(start == string::npos)
+                break;
             end = line.find(',', start);
+            
             // Gets first node of the edge
             source = stoi(line.substr(start + 1, end));
-            cout << "Source: " << source << endl;
+            // cout << "Source: " << source;
+            
             // Fix positions
             start = end;
             end = line.find(')', start);
+            
             // Gets second node of the edge
             target = stoi(line.substr(start + 1, end));
-            cout << "Target: " << target << endl;
+            // cout << " Target: " << target << endl;
+            
+            graph->insertEdge(source, target);
+            cont++;
+
             // Fix position
             pos = end + 1;
-        }
-        
-        
+            // cout << "Pos: " << pos << endl;
+        }      
         //cout << line << endl;
     }
+    // cout << "Edges: " << cont << endl;
 
-    //Criando objeto grafo
-    Graph *graph = new Graph(0, 0, 0, 0);
-    /*
-    //Leitura de arquivo
-
-    if (!graph->isWeightedEdge() && !graph->isWeightedVertex())
-    {
-        while (input_file >> idNodeSource >> idNodeTarget)
-        {
-            graph->insertEdge(idNodeSource, idNodeTarget);
-        }
-    }
-    else if (graph->isWeightedEdge() && !graph->isWeightedVertex())
-    {
-        float edgeWeight;
-
-        while (input_file >> idNodeSource >> idNodeTarget >> edgeWeight)
-        {
-            graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight);
-        }
-    }
-    else if (graph->isWeightedVertex() && !graph->isWeightedEdge())
-    {
-        float nodeSourceWeight, nodeTargetWeight;
-
-        while (input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight)
-        {
-            graph->insertEdge(idNodeSource, idNodeTarget, 1, nodeSourceWeight, nodeTargetWeight);
-        }
-    }
-    else
-    {
-        float nodeSourceWeight, nodeTargetWeight, edgeWeight;
-
-        while (input_file >> idNodeSource >> nodeSourceWeight >> idNodeTarget >> nodeTargetWeight)
-        {
-            graph->insertEdge(idNodeSource, idNodeTarget, edgeWeight, nodeSourceWeight, nodeTargetWeight);
-        }
-    }
-
-    graph->insertMissingVertices();
-    */
     return graph;
 }
 
@@ -175,6 +151,8 @@ int main(int argc, char const *argv[])
         std::cerr << "Input file not found!" << std::endl;
         exit(1);
     }
+
+    g->Greedy(5, 0);
 
     // Menu
 

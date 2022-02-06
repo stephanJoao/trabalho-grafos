@@ -53,7 +53,7 @@ class Graph
         void printAdjList();
         void saveToDot(std::string function, std::set<std::pair<int, int>> *red_edges = nullptr, std::set<std::pair<int, int>> *gray_edges = nullptr);
 
-        // Assignment especific methods
+        // First assignment especific methods
 
         void DirectTransitiveClosure(int id);
         void AuxDirectTransitiveClosure(int id, std::set<std::pair<int, int>> *);
@@ -67,6 +67,10 @@ class Graph
         bool BFS(int id);
         void topologicalSorting();
         void auxTopologicalSorting(int id, std::map<int, int> &colors, std::list<int> &order, bool *dag);
+
+        // Second assignment especific methods
+        
+        int Greedy(int clusters, float alfa = 0);
     
 };
 
