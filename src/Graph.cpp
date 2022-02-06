@@ -880,7 +880,7 @@ void Graph::topologicalSorting()
 
 //* Second assignment specific methods
 
-typedef struct 
+struct Candidate
 {
     int cluster;
     int source_id;
@@ -892,7 +892,12 @@ typedef struct
         return c1.increase_gap < c2.increase_gap;
     }
 
-}Candidate; 
+    friend bool operator>(Candidate c1, Candidate c2) 
+    {
+        return c1.increase_gap > c2.increase_gap;
+    }
+
+}; 
 
 typedef struct
 {
@@ -910,6 +915,7 @@ void removeByValue(std::vector<int> &v, int value)
     }
     v.erase(v.begin() + i);
 }
+
 
 void printSolutions(Solution solutions[], int clusters) 
 {
@@ -933,11 +939,11 @@ void printAvailable(std::vector<int> v)
     std::cout << "\n";
 }
 
-void printCandidates(std::vector<Candidate> v){
+void printCandidates(std::list<Candidate> v){
     std::cout << "Candidates: ";
-    for(int i = 0; i < v.size(); i++)
+    for(std::list<Candidate>::iterator it = v.begin(); it != v.end(); ++it)
     {
-        std::cout << "Candidate: " << v[i].target_id << ", cluster: " << v[i].cluster << "\n";
+        std::cout << "Candidate: " << it->target_id << ", cluster: " << it->cluster << ", increasedGap: " << it->increase_gap << "\n";
     }
     std::cout << "\n";
 }
@@ -959,7 +965,7 @@ int Graph::Greedy(int clusters, float alfa)
     /*
      * Candidates list
      */
-    std::vector<Candidate> candidates;
+    std::list<Candidate> candidates;
 
     /*
      * Create initial solution
@@ -998,21 +1004,28 @@ int Graph::Greedy(int clusters, float alfa)
                 c.cluster = i;
                 c.source_id = current_vertex_id;
                 c.target_id = e->getTargetId();
+
+                // std::cout << c.source_id << ", " << c.target_id << "\n";
+                // std::cout << vertices[c.source_id]->getWeight() << ": " << vertices[c.target_id]->getWeight() << "\n";
                 
                 int weigth = vertices[e->getTargetId()]->getWeight();
                 int lower_weigth = solutions[i].lower;
                 int higher_weigth = solutions[i].higher;
+                // std::cout << "Lower weight: " << lower_weigth << "\n";
+                // std::cout << "Higher weight: " << higher_weigth << "\n";
                 
                 if(weigth < lower_weigth) {
-                    solutions[i].lower = vertices[e->getTargetId()]->getWeight();
+                    // solutions[i].lower = vertices[e->getTargetId()]->getWeight();
                     c.increase_gap = abs(weigth - lower_weigth);
                 }
                 else if(weigth > higher_weigth) {
-                    solutions[i].higher = vertices[e->getTargetId()]->getWeight();
+                    // solutions[i].higher = vertices[e->getTargetId()]->getWeight();
                     c.increase_gap = abs(weigth - higher_weigth);
                 }
                 else
                     c.increase_gap = 0;
+                
+                // std::cout << "increase gap: " << c.increase_gap << "\n\n";
 
                 // Adds to vector
                 candidates.push_back(c);
@@ -1020,62 +1033,14 @@ int Graph::Greedy(int clusters, float alfa)
         }        
     }
 
+    candidates.sort();
+
     /*
      * Print to check if everything is correct
      */
     printCandidates(candidates);
-
     
+    return 0;
+
 }
 
-
-// Quicksor para ordenar vetor de candidatos
-// *Particionamento para Quicksort
-template <typename T>
-int particionamento(std::vector<T> vet, int primeiro, int ultimo) {
-    int posicaoPivo = (primeiro + ultimo) / 2;
-    TIPO pivo = vet[posicaoPivo];
-    int i = primeiro;
-    int j = ultimo;
-    while(i <= j) {
-        while(vet[i] < pivo) {
-            comparacoes++;
-            i++;
-        }
-        while(vet[j] > pivo) {
-            comparacoes++;
-            j--;
-        }
-        if(i <= j) {
-            comparacoes++;
-            movimentacoes++;
-            troca(i, j);
-            i++;
-            j--;
-        }
-    }
-    return i;
-}
-
-// *Quicksort auxiliar
-template <typename T>
-void quickSortAux(std::vector<T> vet, int primeiro, int ultimo) {
-    if(primeiro < ultimo) {
-        int part = particionamento(primeiro, ultimo);
-        quickSortAux(primeiro, part - 1);
-        quickSortAux(part, ultimo);
-    }
-}
-
-// *Quicksort
-template <typename T>
-void quickSort(std::vector<T> vet) {
-    quickSortAux(0, vet.size() - 1);
-}
-
-template <typename T>
-void troca(int i, int j) {
-    TIPO aux = vet[i];            
-    vet[i] = vet[j];
-    vet[j] = aux;
-}
