@@ -8,11 +8,10 @@
 
 using namespace std;
 
-Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex)
+Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex, int* clusters)
 {
     Graph *graph;
 
-    int clusters;
     int order;
 
     int node_id, node_weight;
@@ -27,7 +26,7 @@ Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
         getline(input_file, line, ' ');
 
     // Reads number of clusters
-    clusters = stoi(line);    
+    *clusters = stoi(line);    
     cout << "Clusters: " << clusters << endl;
 
     // Skips lines
@@ -140,10 +139,11 @@ int main(int argc, char const *argv[])
     ifstream input_file;
     input_file.open(input_file_name, ios::in);
 
+    int* clusters = new int;
     Graph *g;
     if (input_file.is_open())
     {
-        g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+        g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), clusters);
         g->setOutfileName(output_file_name);
     }
     else
@@ -152,7 +152,8 @@ int main(int argc, char const *argv[])
         exit(1);
     }
 
-    g->Greedy(5, 0);
+    g->Greedy(*clusters, 0);
+    delete clusters;
 
     // Menu
 

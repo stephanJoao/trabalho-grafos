@@ -897,6 +897,10 @@ struct Candidate
         return c1.increase_gap > c2.increase_gap;
     }
 
+    friend bool operator==(Candidate c1, Candidate c2)
+    {
+        return c1.target_id == c2.target_id;
+    }
 }; 
 
 typedef struct
@@ -936,14 +940,14 @@ void printAvailable(std::vector<int> v)
     {
         std::cout << v[i] << " ";
     }
-    std::cout << "\n";
+    std::cout << "\n\n";
 }
 
 void printCandidates(std::list<Candidate> v){
-    std::cout << "Candidates: ";
+    std::cout << "Candidates: \n";
     for(std::list<Candidate>::iterator it = v.begin(); it != v.end(); ++it)
     {
-        std::cout << "Candidate: " << it->target_id << ", cluster: " << it->cluster << ", increasedGap: " << it->increase_gap << "\n";
+        std::cout << "  Candidate: " << it->target_id << ", cluster: " << it->cluster << ", increasedGap: " << it->increase_gap << "\n";
     }
     std::cout << "\n";
 }
@@ -999,46 +1003,136 @@ int Graph::Greedy(int clusters, float alfa)
             {
                 Edge *e = it->second;
                 
+                bool id_available = false;
+                for(int i = 0; i < available.size(); i++) {
+                    if(available[i] == e->getTargetId())
+                        id_available = true;
+                }
                 // Instantiate candidate
-                Candidate c;
-                c.cluster = i;
-                c.source_id = current_vertex_id;
-                c.target_id = e->getTargetId();
+                if(id_available) 
+                {
+                    Candidate c;
+                    c.cluster = i;
+                    c.source_id = current_vertex_id;
+                    c.target_id = e->getTargetId();
 
-                // std::cout << c.source_id << ", " << c.target_id << "\n";
-                // std::cout << vertices[c.source_id]->getWeight() << ": " << vertices[c.target_id]->getWeight() << "\n";
+                    // std::cout << c.source_id << ", " << c.target_id << "\n";
+                    // std::cout << vertices[c.source_id]->getWeight() << ": " << vertices[c.target_id]->getWeight() << "\n";
+                    
+                    int weigth = vertices[e->getTargetId()]->getWeight();
+                    int lower_weigth = solutions[i].lower;
+                    int higher_weigth = solutions[i].higher;
+                    // std::cout << "Lower weight: " << lower_weigth << "\n";
+                    // std::cout << "Higher weight: " << higher_weigth << "\n";
+                    
+                    if(weigth < lower_weigth) {
+                        // solutions[i].lower = vertices[e->getTargetId()]->getWeight();
+                        c.increase_gap = abs(weigth - lower_weigth);
+                    }
+                    else if(weigth > higher_weigth) {
+                        // solutions[i].higher = vertices[e->getTargetId()]->getWeight();
+                        c.increase_gap = abs(weigth - higher_weigth);
+                    }
+                    else
+                        c.increase_gap = 0;
+                    
+                    // std::cout << "increase gap: " << c.increase_gap << "\n\n";
+                    
+                    // Adds to vector
+                    candidates.push_back(c);
+                }
+
+            }
+        }        
+    }
+    printCandidates(candidates);
+
+    /*
+     * Iterations
+     */
+    int it = 6;
+    int n = 0;
+    while(available.size() > 0)
+    {
+        std::cout << "\n\nIteration: " << n << "\n\n";
+
+        //* Sort candidates according to their increase in the gap
+        candidates.sort();
+        printCandidates(candidates);
+
+        //* Chooses the candidate that is going to enter the solution
+        //TODO Fator randomico do guloso
+        int size_possibilities = candidates.size() * alfa;
+        //TODO Essa daqui que tem que ser escolhido usando a parada do randomico 
+        int candidates_index = 0;
+        
+        //* Adds the chosen vertex to the solution
+        int chosen_vertex = candidates.front().target_id;
+        int chosen_cluster = candidates.front().cluster;
+
+        // Adds and updates the lower or higher weigths
+        solutions[chosen_cluster].vertices_ids.push_back(chosen_vertex);
+        if(vertices[chosen_vertex]->getWeight() > solutions[chosen_cluster].higher)
+            solutions[chosen_cluster].higher = vertices[chosen_vertex]->getWeight();
+        else if(vertices[chosen_vertex]->getWeight() < solutions[chosen_cluster].lower)
+            solutions[chosen_cluster].lower = vertices[chosen_vertex]->getWeight();
+
+        //* Removes the vertex from available
+        removeByValue(available, chosen_vertex);
+        
+        //* Clear candidates of all target vertices with the same id
+        Candidate aux;
+        aux.target_id = chosen_vertex;
+        candidates.remove(aux);
+
+        //* Adds new candidates
+        std::unordered_map<int, Edge *> edges = vertices[chosen_vertex]->getEdges();
+        for (std::unordered_map<int, Edge *>::iterator it = edges.begin(); it != edges.end(); ++it)
+        {
+            Edge *e = it->second;
+            
+            bool id_available = false;
+            for(int i = 0; i < available.size(); i++) {
+                if(available[i] == e->getTargetId())
+                    id_available = true;
+            }
+            // Instantiate candidate if not in solution
+            if(id_available) 
+            {
+                Candidate c;
+                c.cluster = chosen_cluster;
+                c.source_id = chosen_vertex;
+                c.target_id = e->getTargetId();
                 
                 int weigth = vertices[e->getTargetId()]->getWeight();
-                int lower_weigth = solutions[i].lower;
-                int higher_weigth = solutions[i].higher;
-                // std::cout << "Lower weight: " << lower_weigth << "\n";
-                // std::cout << "Higher weight: " << higher_weigth << "\n";
+                int lower_weigth = solutions[chosen_cluster].lower;
+                int higher_weigth = solutions[chosen_cluster].higher;
                 
                 if(weigth < lower_weigth) {
-                    // solutions[i].lower = vertices[e->getTargetId()]->getWeight();
                     c.increase_gap = abs(weigth - lower_weigth);
                 }
                 else if(weigth > higher_weigth) {
-                    // solutions[i].higher = vertices[e->getTargetId()]->getWeight();
                     c.increase_gap = abs(weigth - higher_weigth);
                 }
                 else
                     c.increase_gap = 0;
                 
-                // std::cout << "increase gap: " << c.increase_gap << "\n\n";
-
                 // Adds to vector
                 candidates.push_back(c);
             }
-        }        
-    }
+        }
+        n++;
+        
+        printSolutions(solutions, clusters);
+        printAvailable(available);
+        
 
-    candidates.sort();
+    }
 
     /*
      * Print to check if everything is correct
      */
-    printCandidates(candidates);
+    //printCandidates(candidates);
     
     return 0;
 
