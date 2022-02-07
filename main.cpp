@@ -3,14 +3,16 @@
 #include <vector>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <ctime>
+#include <chrono>
 
 #include "include/Graph.hpp"
 
 using namespace std;
 
-Graph *readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex, int* clusters)
+Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex, int* clusters)
 {
-    Graph *graph;
+    Graph* graph;
 
     int order;
 
@@ -152,7 +154,19 @@ int main(int argc, char const *argv[])
         exit(1);
     }
 
+    std::clock_t c_start = std::clock();
+    auto t_start = std::chrono::high_resolution_clock::now();
+
     g->Greedy(*clusters, 0);
+    
+    std::clock_t c_end = std::clock();
+    auto t_end = std::chrono::high_resolution_clock::now();
+    
+    long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+    
+    std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
+    std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
+    
     delete clusters;
 
     // Menu
