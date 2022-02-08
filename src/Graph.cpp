@@ -10,6 +10,7 @@
 #include "../include/Graph.hpp"
 #include "../include/Vertex.hpp"
 #include "../include/Edge.hpp"
+#include "../include/Util.hpp"
 
 #define INFINITY std::numeric_limits<int>::max()
 
@@ -925,9 +926,11 @@ void printSolutions(Solution solutions[], int clusters)
 {
     std::cout << "\nSolutions" << std::endl;
     for(int i = 0; i < clusters; i++) {
-        printf("%c = {", 'a'+i);   
+        printf("    %c = {", 'a'+i);   
         for(int j = 0; j < solutions[i].vertices_ids.size(); j++) {
-            std::cout << solutions[i].vertices_ids[j] << ", ";        
+            std::cout << solutions[i].vertices_ids[j];        
+            if(j != solutions[i].vertices_ids.size() - 1)
+                std::cout << ", ";
         }
         std::cout << "}" << "   Cost = " << (solutions[i].higher - solutions[i].lower) << "\n\n";
     }
@@ -935,19 +938,19 @@ void printSolutions(Solution solutions[], int clusters)
 
 void printAvailable(std::vector<int> v) 
 {
-    std::cout << "Indexes: ";
+    std::cout << "Indexes: \n   ";
     for(int i = 0; i < v.size(); i++)
     {
         std::cout << v[i] << " ";
     }
-    std::cout << "\n\n";
+    std::cout << "\n";
 }
 
 void printCandidates(std::list<Candidate> v){
     std::cout << "Candidates: \n";
     for(std::list<Candidate>::iterator it = v.begin(); it != v.end(); ++it)
     {
-        std::cout << "  Candidate: " << it->target_id << ", cluster: " << it->cluster << ", increasedGap: " << it->increase_gap << "\n";
+        std::cout << "  Candidate: " << it->target_id << ", cluster: " << it->cluster << ", increase in gap: " << it->increase_gap << "\n";
     }
     std::cout << "\n";
 }
@@ -955,14 +958,19 @@ void printCandidates(std::list<Candidate> v){
 int Graph::Greedy(int clusters, float alfa) 
 {
     /*
-     * Creates Vector of available vertices
+     * Randomized part
+     */
+    init_genrand(time(0));
+    
+    /*
+     * Vector of available vertices
      */
     std::vector<int> available;
     for(int i = 1; i <= order; i++)
         available.push_back(i);
     
     /*
-     * Create empty solutions
+     * Empty solutions
      */
     Solution solutions[clusters];
 
@@ -972,7 +980,7 @@ int Graph::Greedy(int clusters, float alfa)
     std::list<Candidate> candidates;
 
     /*
-     * Create initial solution
+     * Initial solution
      */
     int cluster_interval = this->order / clusters;
     for(int i = 0; i < clusters; i++)
@@ -987,8 +995,8 @@ int Graph::Greedy(int clusters, float alfa)
     /*
      * Print to check if everything is correct
      */
-    printSolutions(solutions, clusters);
-    printAvailable(available);
+    // printSolutions(solutions, clusters);
+    // printAvailable(available);
 
     /*
      * First update in candidates list
@@ -1008,69 +1016,80 @@ int Graph::Greedy(int clusters, float alfa)
                     if(available[i] == e->getTargetId())
                         id_available = true;
                 }
-                // Instantiate candidate
+                // Instantiate candidate if not in solution
                 if(id_available) 
                 {
                     Candidate c;
                     c.cluster = i;
                     c.source_id = current_vertex_id;
                     c.target_id = e->getTargetId();
-
-                    // std::cout << c.source_id << ", " << c.target_id << "\n";
-                    // std::cout << vertices[c.source_id]->getWeight() << ": " << vertices[c.target_id]->getWeight() << "\n";
                     
                     int weigth = vertices[e->getTargetId()]->getWeight();
                     int lower_weigth = solutions[i].lower;
                     int higher_weigth = solutions[i].higher;
-                    // std::cout << "Lower weight: " << lower_weigth << "\n";
-                    // std::cout << "Higher weight: " << higher_weigth << "\n";
                     
                     if(weigth < lower_weigth) {
-                        // solutions[i].lower = vertices[e->getTargetId()]->getWeight();
                         c.increase_gap = abs(weigth - lower_weigth);
                     }
                     else if(weigth > higher_weigth) {
-                        // solutions[i].higher = vertices[e->getTargetId()]->getWeight();
                         c.increase_gap = abs(weigth - higher_weigth);
                     }
                     else
                         c.increase_gap = 0;
-                    
-                    // std::cout << "increase gap: " << c.increase_gap << "\n\n";
-                    
-                    // Adds to vector
+                                        
+                    // Adds to vector of candidates
                     candidates.push_back(c);
                 }
 
             }
         }        
     }
-    printCandidates(candidates);
+    // printCandidates(candidates);
 
     /*
      * Iterations
      */
-    int it = 6;
-    int n = 0;
+    int n = 1;
     while(available.size() > 0)
     {
-        std::cout << "\n\nIteration: " << n << "\n\n";
+        // std::cout << "\n\nIteration: " << n << "\n\n";
 
         //* Sort candidates according to their increase in the gap
         candidates.sort();
-        printCandidates(candidates);
+        // printCandidates(candidates);
 
         //* Chooses the candidate that is going to enter the solution
-        //TODO Fator randomico do guloso
-        int size_possibilities = candidates.size() * alfa;
-        //TODO Essa daqui que tem que ser escolhido usando a parada do randomico 
-        int candidates_index = 0;
+        int candidates_index;
+        if(alfa != 0) {
+            init_genrand(time(0));
+            int size_possibilities = candidates.size() * alfa;
+            candidates_index = intRandom(size_possibilities);
+            // std::cout << candidates_index << std::endl;
+        }
+        else
+            candidates_index = 0;
         
         //* Adds the chosen vertex to the solution
-        int chosen_vertex = candidates.front().target_id;
-        int chosen_cluster = candidates.front().cluster;
+        int chosen_vertex;
+        int chosen_cluster;
+        if(alfa != 0) {
+            std::list<Candidate>::iterator it;
+            int n = 0;
+            for (it = candidates.begin(); it != candidates.end(); ++it){
+                if(n == candidates_index) {
+                    chosen_vertex = it->target_id;
+                    chosen_cluster = it->cluster;
+                    break;
+                }
+                n++;
+            }
+        }
+        else {
+            chosen_vertex = candidates.front().target_id;
+            chosen_cluster = candidates.front().cluster;
+        }
 
-        // Adds and updates the lower or higher weigths
+        //* Adds and updates the lower or higher weigths
         solutions[chosen_cluster].vertices_ids.push_back(chosen_vertex);
         if(vertices[chosen_vertex]->getWeight() > solutions[chosen_cluster].higher)
             solutions[chosen_cluster].higher = vertices[chosen_vertex]->getWeight();
@@ -1117,24 +1136,39 @@ int Graph::Greedy(int clusters, float alfa)
                 else
                     c.increase_gap = 0;
                 
-                // Adds to vector
+                // Adds to vector of candidates
                 candidates.push_back(c);
             }
         }
         n++;
         
-        printSolutions(solutions, clusters);
-        printAvailable(available);
-        
+        /*
+         * Print to check if everything is correct
+         */
+        // printSolutions(solutions, clusters);
+        // printAvailable(available);        
 
     }
-
-    /*
-     * Print to check if everything is correct
-     */
-    //printCandidates(candidates);
     
-    return 0;
+    int cost = 0;
+    for(int i = 0; i < clusters; i++) {
+        cost += solutions[i].higher - solutions[i].lower;
+    }
+    std::cout << "Total cost: " << cost << std::endl;
 
+    return cost;
 }
 
+int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int iterations)
+{
+    int best = std::numeric_limits<int>::max();
+    int aux;
+    for(int i = 0; i < iterations; i++) {
+        aux = Greedy(clusters, alfa);
+        if(aux < best)
+            best = aux;
+    }
+    std::cout << "Best cost found: " << best << std::endl;
+
+    return best;
+}

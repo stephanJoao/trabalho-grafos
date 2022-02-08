@@ -29,7 +29,7 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
 
     // Reads number of clusters
     *clusters = stoi(line);    
-    cout << "Clusters: " << clusters << endl;
+    cout << "Clusters: " << *clusters << endl;
 
     // Skips lines
     for(int i = 0; i < 2; i++)
@@ -157,7 +157,7 @@ int main(int argc, char const *argv[])
     std::clock_t c_start = std::clock();
     auto t_start = std::chrono::high_resolution_clock::now();
 
-    g->Greedy(*clusters, 0);
+    g->Greedy(*clusters);
     
     std::clock_t c_end = std::clock();
     auto t_end = std::chrono::high_resolution_clock::now();
