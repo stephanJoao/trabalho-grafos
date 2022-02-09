@@ -154,20 +154,39 @@ int main(int argc, char const *argv[])
         exit(1);
     }
 
-    std::clock_t c_start = std::clock();
-    auto t_start = std::chrono::high_resolution_clock::now();
+    std::string instance_names[10] = {"n100d03p1i1.txt", "n100plap1i1.txt", 
+                                      "n200d03p3i1.txt", "n200plap1i1.txt", 
+                                      "n200plap1i3.txt", "n300d03p1i5.txt", 
+                                      "n300plap1i1.txt", "n400plap1i5.txt", 
+                                      "n500d06p3i3.txt", "n500plap3i5.txt"};
+    std::string file_name = "./output/greedy_results.txt";
+    float alfa = 0.1;
+    int* seed = new int;
+    int* best_it = new int;
+    int iterations = 1000;
+    int best_cost;
 
-    g->GreedyRandomizedAdaptative(*clusters, 0.1, 1000);
+    for(int i = 0 ; i < 30; i++) {
+        std::clock_t c_start = std::clock();
+        auto t_start = std::chrono::high_resolution_clock::now();
+
+        best_cost = g->GreedyRandomizedAdaptative(*clusters, alfa, seed, best_it, iterations);
+        
+        std::clock_t c_end = std::clock();
+        auto t_end = std::chrono::high_resolution_clock::now();
+        
+        long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+        
+        std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
+        std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
+
+        g->printGreedyRandomizedAdaptativeTxt(file_name, instance_names[0], iterations, alfa, *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
+    }
     
-    std::clock_t c_end = std::clock();
-    auto t_end = std::chrono::high_resolution_clock::now();
-    
-    long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
-    
-    std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
-    std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
-    
+
     delete clusters;
+    delete best_it;
+    delete seed;
 
     // Menu
 

@@ -68,11 +68,12 @@ Vertex *Graph::getVertex(int id)
 
 void Graph::setOutfileName(std::string outfile_name)
 {
-    this->outfile_name = "./output/" + outfile_name;
+    // this->outfile_name = "./output/" + outfile_name;
+    this->outfile_name = outfile_name;
 
     // If filename doesn't have an extension then add ".dot" in the end
-    if (outfile_name.rfind('.') == std::string::npos)
-        this->outfile_name += ".dot";
+    // if (outfile_name.rfind('.') == std::string::npos)
+    //     this->outfile_name += ".dot";
 }
 
 //* Other methods
@@ -1257,7 +1258,19 @@ int Graph::OldGreedy(int clusters, float alfa)
     return cost;
 }
 
-int Graph::Greedy(int clusters, float alfa, int seed) 
+void Graph::printGreedyTxt(std::string file_name, std::string instance_name, int cost, double CPU_time, double wall_time) {
+    std::ofstream outfile;
+    file_name = "./output/greedy_results.txt";
+    std::cout << file_name << std::endl;
+    outfile.open(file_name, std::ios::app);
+    
+    outfile << "\n\nInstance: " << instance_name;
+    outfile << "\n  Cost --------------- " << cost;
+    outfile << "\n  CPU Time ----------- " << CPU_time << " ms";
+    outfile << "\n  Wall clock time ---- " << wall_time << " ms";
+}
+
+int Graph::Greedy(int clusters, float alfa) 
 {    
     /*
      * Vector of available vertices
@@ -1374,14 +1387,13 @@ int Graph::Greedy(int clusters, float alfa, int seed)
             }
         }        
     }
+    candidates.sort();
     // printCandidates(candidates);
-
     
     /*
      * Iterations
      */
     int n = 1;
-    std::cout << "Seed: " << seed << std::endl;
     while(available.size() > 0)
     {
         // std::cout << "\n\nIteration: " << n << "\n\n";
@@ -1468,6 +1480,13 @@ int Graph::Greedy(int clusters, float alfa, int seed)
                     c.increase_gap = 0;
                 
                 // Adds to vector of candidates
+                // std::list<Candidate>::iterator it;
+                // int n = 0;
+                // for (it = candidates.begin(); it != candidates.end(); ++it){
+                //     if(it->increase_gap > c.increase_gap)
+                //         break;
+                // }
+                // candidates.insert(it, c);
                 candidates.push_back(c);
             }
         }
@@ -1490,18 +1509,34 @@ int Graph::Greedy(int clusters, float alfa, int seed)
     return cost;
 }
 
-int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int iterations)
+void Graph::printGreedyRandomizedAdaptativeTxt(std::string file_name, std::string instance_name, int iterations, float alfa, int seed, int best_cost, int best_it, double CPU_time, double wall_time) {
+    std::ofstream outfile;
+    file_name = "./output/greedyRA_results_" + instance_name + ".txt";
+    std::cout << file_name << std::endl;
+    outfile.open(file_name, std::ios::app);
+    
+    outfile << "\n\nInstance: " << instance_name;
+    outfile << "\n  Iterations --------- " << iterations;
+    outfile << "\n  Alfa --------------- " << alfa;
+    outfile << "\n  Seed --------------- " << seed;
+    outfile << "\n  Best cost ---------- " << best_cost;
+    outfile << "\n  Best it ------------ " << best_it;
+    outfile << "\n  CPU Time ----------- " << CPU_time << " ms";
+    outfile << "\n  Wall clock time ---- " << wall_time << " ms";
+}
+
+int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int* seed, int* best_it, int iterations)
 {
-    int seed = time(0);
-    init_genrand(seed);
-    int best_it;
+    *seed = time(0);
+    init_genrand(*seed);
     int best = std::numeric_limits<int>::max();
     int aux;
     for(int i = 0; i < iterations; i++) {
-        aux = Greedy(clusters, alfa, seed);
+        std::cout << "Iteration " << i + 1 << std::endl;
+        aux = Greedy(clusters, alfa);
         if(aux < best) {
             best = aux;
-            best_it = i;
+            *best_it = i;
         }
     }
     std::cout << "Best cost found: " << best << std::endl;
