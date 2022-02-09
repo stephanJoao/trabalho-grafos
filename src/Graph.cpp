@@ -909,7 +909,25 @@ typedef struct
     std::vector<int> vertices_ids;
     int higher;
     int lower;
-}Solution;
+} Solution;
+
+struct AuxEdge
+{
+    int source;
+    int target;
+    int gap;
+
+    friend bool operator<(AuxEdge e1, AuxEdge e2) 
+    {
+        return e1.gap < e2.gap;
+    }
+
+    friend bool operator>(AuxEdge e1, AuxEdge e2) 
+    {
+        return e1.gap > e2.gap;
+    }
+};
+
 
 void removeByValue(std::vector<int> &v, int value) 
 {
@@ -921,6 +939,16 @@ void removeByValue(std::vector<int> &v, int value)
     v.erase(v.begin() + i);
 }
 
+bool checkAvailable(std::vector<int> v, int a, int b) {
+    int found = 0;
+    for(int i = 0; i < v.size(); i++) {
+        if(v[i] == a || v[i] == b)
+            found++;
+        if(found == 2) 
+            return true;
+    }
+    return false;
+}
 
 void printSolutions(Solution solutions[], int clusters) 
 {
@@ -955,7 +983,7 @@ void printCandidates(std::list<Candidate> v){
     std::cout << "\n";
 }
 
-int Graph::Greedy(int clusters, float alfa) 
+int Graph::OldGreedy(int clusters, float alfa) 
 {
     /*
      * Randomized part
@@ -982,14 +1010,84 @@ int Graph::Greedy(int clusters, float alfa)
     /*
      * Initial solution
      */
+    std::vector<int> initial_ids(clusters);
     int cluster_interval = this->order / clusters;
-    for(int i = 0; i < clusters; i++)
-    {        
+    for(int i = 0; i < clusters; i++) {
         int id = (i * cluster_interval) + 1;
-        solutions[i].vertices_ids.push_back(id);
+        initial_ids[i] = id;
         removeByValue(available, id);
         solutions[i].higher = vertices[id]->getWeight();
         solutions[i].lower = vertices[id]->getWeight();
+    }
+    for(int i = 0; i < clusters; i++)
+    {        
+        int id = initial_ids[i];        
+            
+        int smallest_gap = std::numeric_limits<int>::max();
+        int smallest_gap_target = 0;
+
+        std::unordered_map<int, Edge *> edges = vertices[id]->getEdges();
+        for (std::unordered_map<int, Edge *>::iterator it = edges.begin(); it != edges.end(); ++it)
+        {
+            Edge *e = it->second;
+            int source_weight = vertices[id]->getWeight();
+            int target_weigth = vertices[e->getTargetId()]->getWeight();
+            bool used = true, found_available = false;
+            for(int i = 0; i < available.size(); i++) {
+                if(e->getTargetId() == available[i])
+                    used = false;
+            }
+            if((abs(source_weight - target_weigth) < smallest_gap)  && !used) {
+                smallest_gap = abs(source_weight - target_weigth);
+                smallest_gap_target = e->getTargetId();
+                found_available = true;
+            }   
+            if(!found_available && !used)         
+                smallest_gap = e->getTargetId();
+        }
+
+        while(smallest_gap_target == 0) {
+            available.push_back(id);
+            bool found_next = false;
+            while(!found_next) {
+                id = id + 1;
+                for(int i = 0; i < available.size(); i++) {
+                    if(id == available[i])
+                        found_next = true;
+                }
+            }
+            removeByValue(available, id);
+            solutions[i].higher = vertices[id]->getWeight();
+            solutions[i].lower = vertices[id]->getWeight();
+            std::unordered_map<int, Edge *> edges = vertices[id]->getEdges();
+            for (std::unordered_map<int, Edge *>::iterator it = edges.begin(); it != edges.end(); ++it)
+            {
+                Edge *e = it->second;
+                int source_weight = vertices[id]->getWeight();
+                int target_weigth = vertices[e->getTargetId()]->getWeight();
+                bool used = true, found_available = false;
+                for(int i = 0; i < available.size(); i++) {
+                    if(e->getTargetId() == available[i])
+                        used = false;
+                }
+                if((abs(source_weight - target_weigth) < smallest_gap)  && !used) {
+                    smallest_gap = abs(source_weight - target_weigth);
+                    smallest_gap_target = e->getTargetId();
+                    found_available = true;
+                }   
+                if(!found_available && !used)         
+                    smallest_gap = e->getTargetId();
+            }
+        }
+
+        solutions[i].vertices_ids.push_back(id);        
+        solutions[i].vertices_ids.push_back(smallest_gap_target);
+        
+        removeByValue(available, smallest_gap_target);
+        if(solutions[i].higher < vertices[smallest_gap_target]->getWeight())
+            solutions[i].higher = vertices[smallest_gap_target]->getWeight();
+        else
+            solutions[i].lower = vertices[smallest_gap_target]->getWeight();
     }
 
     /*
@@ -1159,14 +1257,252 @@ int Graph::Greedy(int clusters, float alfa)
     return cost;
 }
 
+int Graph::Greedy(int clusters, float alfa, int seed) 
+{    
+    /*
+     * Vector of available vertices
+     */
+    std::vector<int> available;
+    for(int i = 1; i <= order; i++)
+        available.push_back(i);
+    
+    /*
+     * Empty solutions
+     */
+    Solution solutions[clusters];
+
+    /*
+     * Candidates list
+     */
+    std::list<Candidate> candidates;
+
+    /*
+     * Initial solution
+     */
+    std::list<AuxEdge> all_edges;
+
+    for (std::unordered_map<int, Vertex*>::iterator itV = vertices.begin(); itV != vertices.end(); ++itV)
+    {
+        Vertex *v = itV->second;
+        std::unordered_map<int, Edge *> edges = v->getEdges();
+        for (std::unordered_map<int, Edge*>::iterator itE = edges.begin(); itE != edges.end(); ++itE)
+        {
+            Edge *e = itE->second;
+            AuxEdge aux;
+            aux.source = v->getId();
+            aux.target = e->getTargetId();
+            aux.gap = abs(v->getWeight() - vertices[e->getTargetId()]->getWeight());
+            all_edges.push_back(aux);
+        }
+    }
+    all_edges.sort();
+
+    int added = 0;
+    std::list<AuxEdge>::iterator it;
+    for (it = all_edges.begin(); it != all_edges.end(); ++it)
+    {
+        if(added < clusters) 
+        {
+            if(checkAvailable(available, it->source, it->target)) 
+            {
+                solutions[added].vertices_ids.push_back(it->source);
+                solutions[added].vertices_ids.push_back(it->target);
+                if(vertices[it->source]->getWeight() > vertices[it->target]->getWeight()) {
+                    solutions[added].higher = vertices[it->source]->getWeight();
+                    solutions[added].lower = vertices[it->target]->getWeight();
+                }
+                else {
+                    solutions[added].lower = vertices[it->source]->getWeight();
+                    solutions[added].higher = vertices[it->target]->getWeight();
+                }
+                removeByValue(available,it->source);
+                removeByValue(available,it->target);
+                added++;
+            }
+
+        }
+    }
+
+    /*
+     * Print to check if everything is correct
+     */
+    //printSolutions(solutions, clusters);
+    // printAvailable(available);
+
+    /*
+     * First update in candidates list
+     */
+    for(int i = 0; i < clusters; i++) 
+    {        
+        for(int j = 0; j < solutions[i].vertices_ids.size(); j++) 
+        {
+            int current_vertex_id = solutions[i].vertices_ids[j];
+            std::unordered_map<int, Edge *> edges = vertices[current_vertex_id]->getEdges();
+            for (std::unordered_map<int, Edge *>::iterator it = edges.begin(); it != edges.end(); ++it)
+            {
+                Edge *e = it->second;
+                
+                bool id_available = false;
+                for(int i = 0; i < available.size(); i++) {
+                    if(available[i] == e->getTargetId())
+                        id_available = true;
+                }
+                // Instantiate candidate if not in solution
+                if(id_available) 
+                {
+                    Candidate c;
+                    c.cluster = i;
+                    c.source_id = current_vertex_id;
+                    c.target_id = e->getTargetId();
+                    
+                    int weigth = vertices[e->getTargetId()]->getWeight();
+                    int lower_weigth = solutions[i].lower;
+                    int higher_weigth = solutions[i].higher;
+                    
+                    if(weigth < lower_weigth) {
+                        c.increase_gap = abs(weigth - lower_weigth);
+                    }
+                    else if(weigth > higher_weigth) {
+                        c.increase_gap = abs(weigth - higher_weigth);
+                    }
+                    else
+                        c.increase_gap = 0;
+                                        
+                    // Adds to vector of candidates
+                    candidates.push_back(c);
+                }
+            }
+        }        
+    }
+    // printCandidates(candidates);
+
+    
+    /*
+     * Iterations
+     */
+    int n = 1;
+    std::cout << "Seed: " << seed << std::endl;
+    while(available.size() > 0)
+    {
+        // std::cout << "\n\nIteration: " << n << "\n\n";
+
+        //* Sort candidates according to their increase in the gap
+        candidates.sort();
+        // printCandidates(candidates);
+
+        //* Chooses the candidate that is going to enter the solution
+        int candidates_index;
+        if(alfa != 0) {
+            int size_possibilities = candidates.size() * alfa;
+            candidates_index = intRandom(size_possibilities);
+            // std::cout << candidates_index << std::endl;
+        }
+        else
+            candidates_index = 0;
+        
+        //* Adds the chosen vertex to the solution
+        int chosen_vertex;
+        int chosen_cluster;
+        if(alfa != 0) {
+            std::list<Candidate>::iterator it;
+            int n = 0;
+            for (it = candidates.begin(); it != candidates.end(); ++it){
+                if(n == candidates_index) {
+                    chosen_vertex = it->target_id;
+                    chosen_cluster = it->cluster;
+                    break;
+                }
+                n++;
+            }
+        }
+        else {
+            chosen_vertex = candidates.front().target_id;
+            chosen_cluster = candidates.front().cluster;
+        }
+
+        //* Adds and updates the lower or higher weigths
+        solutions[chosen_cluster].vertices_ids.push_back(chosen_vertex);
+        if(vertices[chosen_vertex]->getWeight() > solutions[chosen_cluster].higher)
+            solutions[chosen_cluster].higher = vertices[chosen_vertex]->getWeight();
+        else if(vertices[chosen_vertex]->getWeight() < solutions[chosen_cluster].lower)
+            solutions[chosen_cluster].lower = vertices[chosen_vertex]->getWeight();
+
+        //* Removes the vertex from available
+        removeByValue(available, chosen_vertex);
+        
+        //* Clear candidates of all target vertices with the same id
+        Candidate aux;
+        aux.target_id = chosen_vertex;
+        candidates.remove(aux);
+
+        //* Adds new candidates
+        std::unordered_map<int, Edge *> edges = vertices[chosen_vertex]->getEdges();
+        for (std::unordered_map<int, Edge *>::iterator it = edges.begin(); it != edges.end(); ++it)
+        {
+            Edge *e = it->second;
+            
+            bool id_available = false;
+            for(int i = 0; i < available.size(); i++) {
+                if(available[i] == e->getTargetId())
+                    id_available = true;
+            }
+            // Instantiate candidate if not in solution
+            if(id_available) 
+            {
+                Candidate c;
+                c.cluster = chosen_cluster;
+                c.source_id = chosen_vertex;
+                c.target_id = e->getTargetId();
+                
+                int weigth = vertices[e->getTargetId()]->getWeight();
+                int lower_weigth = solutions[chosen_cluster].lower;
+                int higher_weigth = solutions[chosen_cluster].higher;
+                
+                if(weigth < lower_weigth) {
+                    c.increase_gap = abs(weigth - lower_weigth);
+                }
+                else if(weigth > higher_weigth) {
+                    c.increase_gap = abs(weigth - higher_weigth);
+                }
+                else
+                    c.increase_gap = 0;
+                
+                // Adds to vector of candidates
+                candidates.push_back(c);
+            }
+        }
+        n++;
+        
+        /*
+         * Print to check if everything is correct
+         */
+        // printSolutions(solutions, clusters);
+        // printAvailable(available);        
+
+    }
+    
+    int cost = 0;
+    for(int i = 0; i < clusters; i++) {
+        cost += solutions[i].higher - solutions[i].lower;
+    }
+    std::cout << "Total cost: " << cost << std::endl;
+
+    return cost;
+}
+
 int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int iterations)
 {
+    int seed = time(0);
+    init_genrand(seed);
+    int best_it;
     int best = std::numeric_limits<int>::max();
     int aux;
     for(int i = 0; i < iterations; i++) {
-        aux = Greedy(clusters, alfa);
-        if(aux < best)
+        aux = Greedy(clusters, alfa, seed);
+        if(aux < best) {
             best = aux;
+            best_it = i;
+        }
     }
     std::cout << "Best cost found: " << best << std::endl;
 

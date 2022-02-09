@@ -70,7 +70,8 @@ class Graph
 
         // Second assignment especific methods
         
-        int Greedy(int clusters, float alfa = 0);
+        int OldGreedy(int clusters, float alfa = 0);
+        int Greedy(int clusters, float alfa = 0, int seed = 0);
         int GreedyRandomizedAdaptative(int clusters, float alfa, int iterations);
     
 };

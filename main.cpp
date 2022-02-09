@@ -157,7 +157,7 @@ int main(int argc, char const *argv[])
     std::clock_t c_start = std::clock();
     auto t_start = std::chrono::high_resolution_clock::now();
 
-    g->Greedy(*clusters);
+    g->GreedyRandomizedAdaptative(*clusters, 0.1, 1000);
     
     std::clock_t c_end = std::clock();
     auto t_end = std::chrono::high_resolution_clock::now();
