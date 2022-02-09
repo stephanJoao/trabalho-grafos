@@ -50,8 +50,6 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
     for(int i = 0; i < order; i++) 
     {
         input_file >> node_id >> node_weight;
-        // printf("Node:%4d", node_id);
-        // printf(" Weight:%4d\n", node_weight);
         graph->insertVertex(node_id, node_weight);
     }   
 
@@ -65,8 +63,6 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
         int start, end, pos = 0;
         getline(input_file, line);
                 
-        // cout << "Line size: " << line.size() << endl;
-        // cout << "Last char: " << line[line.size() - 1] << endl;
         while(pos < line.size()) 
         {
             start = line.find('(', pos);
@@ -76,7 +72,6 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
             
             // Gets first node of the edge
             source = stoi(line.substr(start + 1, end));
-            // cout << "Source: " << source;
             
             // Fix positions
             start = end;
@@ -84,18 +79,14 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
             
             // Gets second node of the edge
             target = stoi(line.substr(start + 1, end));
-            // cout << " Target: " << target << endl;
             
             graph->insertEdge(source, target);
             cont++;
 
             // Fix position
             pos = end + 1;
-            // cout << "Pos: " << pos << endl;
         }      
-        //cout << line << endl;
     }
-    // cout << "Edges: " << cont << endl;
 
     return graph;
 }
@@ -136,7 +127,7 @@ int main(int argc, char const *argv[])
     bool weighted_vertex = atoi(argv[5]);
     std::cout << "Weighted vertex: " << weighted_vertex << std::endl;
 
-    // Read of input_file
+    //* Read of input_file
 
     ifstream input_file;
     input_file.open(input_file_name, ios::in);
@@ -160,85 +151,36 @@ int main(int argc, char const *argv[])
                                       "n300plap1i1.txt", "n400plap1i5.txt", 
                                       "n500d06p3i3.txt", "n500plap3i5.txt"};
     std::string file_name = "./output/greedy_results.txt";
-    float alfa = 0.1;
+    float alfa[3] = {0.1, 0.2, 0.3};
     int* seed = new int;
     int* best_it = new int;
     int iterations = 1000;
     int best_cost;
 
-    for(int i = 0 ; i < 30; i++) {
-        std::clock_t c_start = std::clock();
-        auto t_start = std::chrono::high_resolution_clock::now();
+    for(int a = 0; a < 3; a++) {
+        for(int i = 0 ; i < 30; i++) {
+            std::clock_t c_start = std::clock();
+            auto t_start = std::chrono::high_resolution_clock::now();
 
-        best_cost = g->GreedyRandomizedAdaptative(*clusters, alfa, seed, best_it, iterations);
-        
-        std::clock_t c_end = std::clock();
-        auto t_end = std::chrono::high_resolution_clock::now();
-        
-        long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
-        
-        std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
-        std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
+            best_cost = g->GreedyRandomizedAdaptative(*clusters, alfa[a], seed, best_it, iterations);
+            
+            std::clock_t c_end = std::clock();
+            auto t_end = std::chrono::high_resolution_clock::now();
+            
+            long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+            
+            std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
+            std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
 
-        g->printGreedyRandomizedAdaptativeTxt(file_name, instance_names[0], iterations, alfa, *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
+            g->printGreedyRandomizedAdaptativeTxt(file_name, instance_names[2], iterations, alfa[a], *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
+        }
     }
-    
 
     delete clusters;
     delete best_it;
     delete seed;
 
-    // Menu
-
-    /*
-    int choice, a, b;
-    mkdir("output", 0777);
-    do
-    {
-        cout << "Options..." << endl;
-        printOptions();
-        cin >> choice;
-
-        switch (choice)
-        {
-        case 0:
-            // code 
-            break;
-        case 1:
-            cout << "Insert the starting vertex: ";
-            cin >> a;
-            g->DirectTransitiveClosure(a);
-            break;
-        case 2:
-            // B 
-            break;
-        case 3:
-            cout << "Type the vertices for the algorithm: ";
-            cin >> a >> b;
-            g->Dijkstra(a, b);
-            break;
-        case 4:
-            cout << "Type the vertices for the algorithm: ";
-            cin >> a >> b;
-            g->Floyd(a, b);
-            break;
-        case 5:
-            g->MST_Kruskal();
-            break;
-        case 6:
-            cout << "Type the vertex for the algorithm: ";
-            cin >> a;
-            g->BFS(a);
-            break;
-        case 7:
-            g->topologicalSorting();
-            break;
-        default:
-            break;
-        }
-    } while (choice != 0);
-    */
-
+    //* Delete graph
     delete g;
 
     return 0;

@@ -1339,7 +1339,7 @@ int Graph::Greedy(int clusters, float alfa)
     /*
      * Print to check if everything is correct
      */
-    //printSolutions(solutions, clusters);
+    // printSolutions(solutions, clusters);
     // printAvailable(available);
 
     /*
@@ -1387,7 +1387,7 @@ int Graph::Greedy(int clusters, float alfa)
             }
         }        
     }
-    candidates.sort();
+    // candidates.sort();
     // printCandidates(candidates);
     
     /*
@@ -1527,6 +1527,26 @@ void Graph::printGreedyRandomizedAdaptativeTxt(std::string file_name, std::strin
 
 int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int* seed, int* best_it, int iterations)
 {
+    *seed = time(0);
+    init_genrand(*seed);
+    int best = std::numeric_limits<int>::max();
+    int aux;
+    for(int i = 0; i < iterations; i++) {
+        std::cout << "Iteration " << i + 1 << std::endl;
+        aux = Greedy(clusters, alfa);
+        if(aux < best) {
+            best = aux;
+            *best_it = i;
+        }
+    }
+    std::cout << "Best cost found: " << best << std::endl;
+
+    return best;
+}
+
+int Graph::GreedyRandomizedAdaptativeReactive(int clusters, float alfa, int* seed, int* best_it, int iterations)
+{
+    int alfa[10] = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
     *seed = time(0);
     init_genrand(*seed);
     int best = std::numeric_limits<int>::max();

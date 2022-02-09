@@ -25,7 +25,7 @@ OBJ = ${filter-out main.o,${AUX_OBJ}}
 CC = g++
 
 # Compiler flags
-CC_FLAGS = -c -g
+CC_FLAGS = -c -O3
 
 
 #* Compilation and linking
@@ -33,13 +33,13 @@ CC_FLAGS = -c -g
 all: objectsFolder ${PROJ_NAME}
 
 ${PROJ_NAME}: ${OBJ}
-	@${CC} $^ -o $@
+	${CC} $^ -o $@
 
 ./objects/%.o: ./src/%.cpp ./include/%.hpp
-	@${CC} $< ${CC_FLAGS} -o $@
+	${CC} $< ${CC_FLAGS} -o $@
 
 ./objects/main.o: main.cpp ${H_SOURCE}
-	@${CC} $< ${CC_FLAGS} -o $@
+	${CC} $< ${CC_FLAGS} -o $@
 
 objectsFolder:
 	@mkdir -p objects
