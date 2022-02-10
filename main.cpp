@@ -10,7 +10,7 @@
 
 using namespace std;
 
-Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex, int* clusters)
+Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool weighted_vertex)
 {
     Graph* graph;
 
@@ -28,8 +28,8 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
         getline(input_file, line, ' ');
 
     // Reads number of clusters
-    *clusters = stoi(line);    
-    cout << "Clusters: " << *clusters << endl;
+    int clusters = stoi(line);    
+    cout << "Clusters: " << clusters << endl;
 
     // Skips lines
     for(int i = 0; i < 2; i++)
@@ -42,7 +42,7 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
     cout << "Order: " << order << endl;
 
     // Creates graph object
-    graph = new Graph(order, directed, weighted_edge, weighted_vertex);
+    graph = new Graph(order, clusters, directed, weighted_edge, weighted_vertex);
 
     // Reads nodes and node weight
     for(int i = 0; i < 6; i++)
@@ -91,52 +91,33 @@ Graph* readGraph(ifstream &input_file, bool directed, bool weighted_edge, bool w
     return graph;
 }
 
-void printOptions()
-{
-    cout << "MENU" << endl;
-    cout << "----" << endl;
-    cout << "[1] Vertex induced subgraph (Direct transitive closure)" << endl;
-    cout << "[2] Vertex induced subgraph (Indirect transitive closure)" << endl;
-    cout << "[3] Shortest path between two vertices (Dijkstra)" << endl;
-    cout << "[4] Shortest path between two vertices (Floyd)" << endl;
-    cout << "[5] Minimum spanning tree of a graph (Kruskal)" << endl;
-    cout << "[6] Breadth-first search of a graph" << endl;
-    cout << "[7] Topological sorting " << endl;
-    cout << "[0] Leave menu" << endl;
-}
-
 int main(int argc, char const *argv[])
 {
-    // Verifies if all parameters have been provided
-
-    if (argc != 6)
+    //* Verifies if all parameters have been provided
+    if (argc != 4)
     {
-        cout << "ERROR: Expecting: ./<program_name> <input_file> <output_file> <directed> <weighted_edge> <weighted_vertex> " << endl;
+        cout << "ERROR: Expecting: ./<program_name> <instance_directory_name> <instance_name> <output_file_name>" << endl;
         return 1;
     }
 
+    //* Reads arguments of execution
     string program_name(argv[0]);
-    string input_file_name(argv[1]);
-    std::cout << "Input file: " << input_file_name << std::endl;
-    string output_file_name(argv[2]);
+    string instance_directory_name(argv[1]);
+    std::cout << "Directory name: " << instance_directory_name << std::endl;
+    string instance_name(argv[2]);
+    std::cout << "Instance name: " << instance_name << std::endl;
+    string output_file_name(argv[3]);
     std::cout << "Output file: " << output_file_name << std::endl;
-    bool directed = atoi(argv[3]);
-    std::cout << "Directed: " << directed << std::endl;
-    bool weighted_edge = atoi(argv[4]);
-    std::cout << "Weighted edge: " << weighted_edge << std::endl;
-    bool weighted_vertex = atoi(argv[5]);
-    std::cout << "Weighted vertex: " << weighted_vertex << std::endl;
 
     //* Read of input_file
-
     ifstream input_file;
-    input_file.open(input_file_name, ios::in);
+    input_file.open(instance_directory_name + "/" + instance_name, ios::in);
 
-    int* clusters = new int;
     Graph *g;
     if (input_file.is_open())
     {
-        g = readGraph(input_file, atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), clusters);
+        g = readGraph(input_file, false, false, true);
+        // It's going to be greedy, greedyRA or greedyRAR
         g->setOutfileName(output_file_name);
     }
     else
@@ -145,49 +126,44 @@ int main(int argc, char const *argv[])
         exit(1);
     }
 
+    g->saveToDot("teste");
+
+    //* Experiments variables
     std::string instance_names[10] = {"n100d03p1i1.txt", "n100plap1i1.txt", 
                                       "n200d03p3i1.txt", "n200plap1i1.txt", 
                                       "n200plap1i3.txt", "n300d03p1i5.txt", 
                                       "n300plap1i1.txt", "n400plap1i5.txt", 
                                       "n500d06p3i3.txt", "n500plap3i5.txt"};
     
-    //* Alfas
-    float alfa[10]      = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
-    //* Alfas probabilities of being choosen
-    float prob_alfa[10] = {0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10};
+    //* Greedy randomized adaptative
+    float alfas_gra[10]        = {0.10, 0.20, 0.30};
+    const int iterations_gra   = 1000;
+    const int experiments_gra  = 30;
 
-    //* Average solution
-    unsigned long int V[10]  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned short int N[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-        
+    //* Greedy randomized adaptative reactive
+    float alfas_grar[10]       = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
+    const int iterations_grar  = 4000;
+    const int experiments_grar = 30;
 
-    int* seed = new int;
-    int* best_it = new int;
-    int iterations = 4000;
-    int best_cost;
 
-    for(int a = 0; a < 3; a++) {
-        for(int i = 0 ; i < 30; i++) {
-            std::clock_t c_start = std::clock();
-            auto t_start = std::chrono::high_resolution_clock::now();
+    // for(int a = 0; a < 3; a++) {
+    //     for(int i = 0 ; i < 30; i++) {
+    //         std::clock_t c_start = std::clock();
+    //         auto t_start = std::chrono::high_resolution_clock::now();
 
-            best_cost = g->GreedyRandomizedAdaptative(*clusters, alfa[a], seed, best_it, iterations);
+    //         best_cost = g->GreedyRandomizedAdaptative(*clusters, alfa[a], seed, best_it, iterations);
             
-            std::clock_t c_end = std::clock();
-            auto t_end = std::chrono::high_resolution_clock::now();
+    //         std::clock_t c_end = std::clock();
+    //         auto t_end = std::chrono::high_resolution_clock::now();
             
-            long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+    //         long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
             
-            std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
-            std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
+    //         std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
+    //         std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
 
-            g->printGreedyRandomizedAdaptativeTxt("file_name", instance_names[2], iterations, alfa[a], *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
-        }
-    }
-
-    delete clusters;
-    delete best_it;
-    delete seed;
+    //         g->printGreedyRandomizedAdaptativeTxt("file_name", instance_names[2], iterations, alfa[a], *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
+    //     }
+    // }
 
     //* Delete graph
     delete g;

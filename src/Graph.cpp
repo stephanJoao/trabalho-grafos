@@ -13,13 +13,14 @@
 #include "../include/Edge.hpp"
 #include "../include/Util.hpp"
 
-#define INFINITY std::numeric_limits<int>::max()
+#define INT_INFINITY std::numeric_limits<int>::max()
 
 //* Constructors and destructors implementations
 
-Graph::Graph(int order, bool directed, bool weighted_edge, bool weighted_vertex)
+Graph::Graph(int order, int clusters, bool directed, bool weighted_edge, bool weighted_vertex)
 {
     this->order = order;
+    this->clusters = clusters;
     this->directed = directed;
     this->weighted_edge = weighted_edge;
     this->weighted_vertex = weighted_vertex;
@@ -69,12 +70,7 @@ Vertex *Graph::getVertex(int id)
 
 void Graph::setOutfileName(std::string outfile_name)
 {
-    // this->outfile_name = "./output/" + outfile_name;
-    this->outfile_name = outfile_name;
-
-    // If filename doesn't have an extension then add ".dot" in the end
-    // if (outfile_name.rfind('.') == std::string::npos)
-    //     this->outfile_name += ".dot";
+    this->outfile_name = "output/" + outfile_name;
 }
 
 //* Other methods
@@ -392,7 +388,7 @@ bool Graph::Dijkstra(int source_id, int target_id)
         else
         {
             Length l;
-            l.length = INFINITY;
+            l.length = INT_INFINITY;
             pi.insert({v->getId(), l});
         }
     }
@@ -410,7 +406,7 @@ bool Graph::Dijkstra(int source_id, int target_id)
     {
         // Find j with minimal path cost in non_iterated
         int j = 0;
-        int j_length = INFINITY;
+        int j_length = INT_INFINITY;
         int j_id = 0;
         for (int i = 0; i < non_iterated.size(); i++)
         {
@@ -430,10 +426,10 @@ bool Graph::Dijkstra(int source_id, int target_id)
         {
             Edge *e = it->second;
             int pi_aux;
-            if (pi[j_id].length != INFINITY)
+            if (pi[j_id].length != INT_INFINITY)
                 pi_aux = pi[j_id].length + e->getWeight();
             else
-                pi_aux = INFINITY;
+                pi_aux = INT_INFINITY;
             if (pi_aux < pi[e->getTargetId()].length)
             {
                 pi[e->getTargetId()].length = pi_aux;
@@ -516,13 +512,13 @@ bool Graph::Floyd(int source_id, int target_id)
             {
                 if (vertices.count(i) == 0)
                 {
-                    A[i][j].length = INFINITY;
+                    A[i][j].length = INT_INFINITY;
                 }
                 else
                 {
                     if (vertices[i]->getEdges().count(j) == 0)
                     {
-                        A[i][j].length = INFINITY;
+                        A[i][j].length = INT_INFINITY;
                     }
                     else
                     {
@@ -549,10 +545,10 @@ bool Graph::Floyd(int source_id, int target_id)
                 int A_calc;
                 if (i != j)
                 {
-                    if (A[i][k].length != INFINITY && A[k][j].length != INFINITY)
+                    if (A[i][k].length != INT_INFINITY && A[k][j].length != INT_INFINITY)
                         A_calc = A[i][k].length + A[k][j].length;
                     else
-                        A_calc = INFINITY;
+                        A_calc = INT_INFINITY;
                     if (A[i][j].length > A_calc)
                     {
                         A[i][j].length = A_calc;
@@ -1025,7 +1021,7 @@ int Graph::OldGreedy(int clusters, float alfa)
     {        
         int id = initial_ids[i];        
             
-        int smallest_gap = std::numeric_limits<int>::max();
+        int smallest_gap = INT_INFINITY;
         int smallest_gap_target = 0;
 
         std::unordered_map<int, Edge *> edges = vertices[id]->getEdges();
@@ -1530,7 +1526,7 @@ int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int* seed, int* 
 {
     *seed = time(0);
     init_genrand(*seed);
-    int best = std::numeric_limits<int>::max();
+    int best = INT_INFINITY;
     int aux;
     for(int i = 0; i < iterations; i++) {
         std::cout << "Iteration " << i + 1 << std::endl;
@@ -1582,7 +1578,6 @@ int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int i
     init_genrand(seed);
 
     //* Alfa array and probabilities
-    float alfas[10]      = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
     float prob_alfas[10] = {0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10};
     
     //* Delta
@@ -1593,7 +1588,7 @@ int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int i
     unsigned short int N[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     
     //* Variables to register best case
-    int best        = std::numeric_limits<int>::max();
+    int best        = INT_INFINITY;
     int best_it     = 0;
     float best_alfa = 0;
 
@@ -1630,7 +1625,7 @@ int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int i
         if(aux < best) {
             best = aux;
             best_it = i;
-            best_alfa = alfa[index_alfa];
+            best_alfa = alfas[index_alfa];
         }
     }
     std::cout << "Best cost found: " << best << std::endl;
