@@ -20,7 +20,8 @@ class Graph
         bool directed;
         bool weighted_edge;
         bool weighted_vertex;
-        std::unordered_map<int, Vertex *> vertices;
+        std::unordered_map<int, Vertex*> vertices;
+        int clusters;
         
         std::string outfile_name;
 

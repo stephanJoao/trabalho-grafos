@@ -1,11 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <string>
+#include <math.h>
 #include <unordered_map>
 #include <queue>
 #include <set>
 #include <list>
 #include <map>
-#include <string>
 
 #include "../include/Graph.hpp"
 #include "../include/Vertex.hpp"
@@ -1544,19 +1545,92 @@ int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int* seed, int* 
     return best;
 }
 
-int Graph::GreedyRandomizedAdaptativeReactive(int clusters, float alfa, int* seed, int* best_it, int iterations)
+int chooseAlfa(float prob_alfa[]) 
 {
-    int alfa[10] = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
-    *seed = time(0);
-    init_genrand(*seed);
-    int best = std::numeric_limits<int>::max();
+    float rand = genrand_real2();
+    float sum_prob = 0;
+    for(int i = 0; i < 10; i++) {
+        if(rand >= sum_prob && rand < sum_prob + prob_alfa[i])
+            return i;
+        if(i == 9)
+            return 9;
+        sum_prob += prob_alfa[i];
+    }
+    std::cout << "ERROR: Didn't found probability" << std::endl;
+    return -1;
+}
+
+void updateProbabilities(unsigned long int V[], unsigned short int N[], float prob_alfa[], int best_cost, int delta) 
+{
+    float q[10];
+    float sum_q = 0;
+    for(int i = 0; i < 10; i++)
+    {
+        q[i] = pow((float)best_cost / ((float)V[i] / N[i]), delta);
+        sum_q += q[i];
+    }
+    for (int i = 0; i < 10; i++)
+    {
+        prob_alfa[i] = q[i] / sum_q;
+    }    
+}
+
+int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int iterations, int stack)
+{    
+    //* Initialize seed
+    int seed = time(0);
+    init_genrand(seed);
+
+    //* Alfa array and probabilities
+    float alfas[10]      = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
+    float prob_alfas[10] = {0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10};
+    
+    //* Delta
+    int delta = 10;
+
+    //* V/N = average of solutions
+    unsigned long int V[10]  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned short int N[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    
+    //* Variables to register best case
+    int best        = std::numeric_limits<int>::max();
+    int best_it     = 0;
+    float best_alfa = 0;
+
+    //* Initialize V and N
+    for(int i = 0; i < 10; i++) {
+        V[i] = Greedy(clusters, alfas[i]);
+        N[i] = 1;
+    }
+
+    //* Iterations variables
     int aux;
+    int index_alfa;
+
+    //* Iterations
     for(int i = 0; i < iterations; i++) {
         std::cout << "Iteration " << i + 1 << std::endl;
-        aux = Greedy(clusters, alfa);
+        
+        // Updating probabilities
+        if(i % stack == 0) {
+            updateProbabilities(V, N, prob_alfas, best, delta);
+        }
+
+        // Choosing the alfa
+        index_alfa = chooseAlfa(prob_alfas);
+        
+        // Greedy
+        aux = Greedy(clusters, alfas[index_alfa]);
+        
+        // Updating the averages
+        V[index_alfa] += aux;
+        N[index_alfa] += 1;
+        
+        // Updating the best
         if(aux < best) {
             best = aux;
-            *best_it = i;
+            best_it = i;
+            best_alfa = alfa[index_alfa];
         }
     }
     std::cout << "Best cost found: " << best << std::endl;

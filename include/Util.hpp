@@ -18,6 +18,7 @@ using namespace std;
 //#define MTWISTER
 
 void init_genrand(unsigned long s);
+double genrand_real2(void);
 unsigned long genrand_int32(void);
 unsigned int intRandom(const unsigned int maxValue);
 

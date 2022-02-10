@@ -150,11 +150,20 @@ int main(int argc, char const *argv[])
                                       "n200plap1i3.txt", "n300d03p1i5.txt", 
                                       "n300plap1i1.txt", "n400plap1i5.txt", 
                                       "n500d06p3i3.txt", "n500plap3i5.txt"};
-    std::string file_name = "./output/greedy_results.txt";
-    float alfa[3] = {0.1, 0.2, 0.3};
+    
+    //* Alfas
+    float alfa[10]      = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
+    //* Alfas probabilities of being choosen
+    float prob_alfa[10] = {0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10};
+
+    //* Average solution
+    unsigned long int V[10]  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    unsigned short int N[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        
+
     int* seed = new int;
     int* best_it = new int;
-    int iterations = 1000;
+    int iterations = 4000;
     int best_cost;
 
     for(int a = 0; a < 3; a++) {
@@ -172,7 +181,7 @@ int main(int argc, char const *argv[])
             std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
             std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
 
-            g->printGreedyRandomizedAdaptativeTxt(file_name, instance_names[2], iterations, alfa[a], *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
+            g->printGreedyRandomizedAdaptativeTxt("file_name", instance_names[2], iterations, alfa[a], *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
         }
     }
 
