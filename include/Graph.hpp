@@ -72,10 +72,13 @@ class Graph
         // Second assignment especific methods
         
         int OldGreedy(int clusters, float alfa = 0);
-        int Greedy(int clusters, float alfa = 0);
-        void printGreedyTxt(std::string file_name, std::string instance_name, int cost, double CPU_time, double wall_time);
-        int GreedyRandomizedAdaptative(int clusters, float alfa, int* seed, int* best_it, int iterations);
+        
+        int Greedy(float alfa = 0);
+        void printGreedyTxt(int cost);
+        
+        int GreedyRandomizedAdaptative(float alfa, int* seed, int* best_it, int iterations);
         void printGreedyRandomizedAdaptativeTxt(std::string file_name, std::string instance_name, int iterations, float alfa, int seed, int best_cost, int best_it, double CPU_time, double wall_time);
+        
         int GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int iterations, int stack);
     
 };

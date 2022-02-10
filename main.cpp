@@ -117,16 +117,14 @@ int main(int argc, char const *argv[])
     if (input_file.is_open())
     {
         g = readGraph(input_file, false, false, true);
-        // It's going to be greedy, greedyRA or greedyRAR
-        g->setOutfileName(output_file_name);
+        // It's going to be greedy, greedyRA or greedyRAR + instance name
+        g->setOutfileName(output_file_name + "_" + instance_name);
     }
     else
     {
         std::cerr << "Input file not found!" << std::endl;
         exit(1);
     }
-
-    g->saveToDot("teste");
 
     //* Experiments variables
     std::string instance_names[10] = {"n100d03p1i1.txt", "n100plap1i1.txt", 
@@ -145,25 +143,34 @@ int main(int argc, char const *argv[])
     const int iterations_grar  = 4000;
     const int experiments_grar = 30;
 
+    /*
+     * Experiments
+     */
+    int cost;
+    long double cpu;
+    long double wall;
+    
+    // Start
+    std::clock_t c_start = std::clock();
+    auto t_start = std::chrono::high_resolution_clock::now();
 
-    // for(int a = 0; a < 3; a++) {
-    //     for(int i = 0 ; i < 30; i++) {
-    //         std::clock_t c_start = std::clock();
-    //         auto t_start = std::chrono::high_resolution_clock::now();
+    cost = g->Greedy();
+            
+    std::clock_t c_end = std::clock();
+    auto t_end = std::chrono::high_resolution_clock::now();
+    // End
 
-    //         best_cost = g->GreedyRandomizedAdaptative(*clusters, alfa[a], seed, best_it, iterations);
+    cpu = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+    wall = std::chrono::duration<double, std::milli> (t_end - t_start).count();
             
-    //         std::clock_t c_end = std::clock();
-    //         auto t_end = std::chrono::high_resolution_clock::now();
-            
-    //         long double time_elapsed_ms = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
-            
-    //         std::cout << "CPU time: " << time_elapsed_ms << " ms\n";
-    //         std::cout << "Wall clock time: " << std::chrono::duration<double, std::milli> (t_end - t_start).count() << " ms\n";
+    std::cout << "CPU time: " << cpu << " ms\n";
+    std::cout << "Wall clock time: " << wall << " ms\n";
 
-    //         g->printGreedyRandomizedAdaptativeTxt("file_name", instance_names[2], iterations, alfa[a], *seed, best_cost, *best_it, time_elapsed_ms, std::chrono::duration<double, std::milli> (t_end - t_start).count());
-    //     }
-    // }
+    // Saves data on file
+    g->printGreedyTxt(cost);
+    ofstream outfile;
+    outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);
+    outfile << cpu << "," << wall;
 
     //* Delete graph
     delete g;

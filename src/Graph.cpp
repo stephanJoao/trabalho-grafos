@@ -1255,19 +1255,15 @@ int Graph::OldGreedy(int clusters, float alfa)
     return cost;
 }
 
-void Graph::printGreedyTxt(std::string file_name, std::string instance_name, int cost, double CPU_time, double wall_time) {
-    std::ofstream outfile;
-    file_name = "./output/greedy_results.txt";
-    std::cout << file_name << std::endl;
-    outfile.open(file_name, std::ios::app);
+void Graph::printGreedyTxt(int cost) {
+    ofstream outfile;
+    outfile.open(outfile_name, std::ios::app);
     
-    outfile << "\n\nInstance: " << instance_name;
-    outfile << "\n  Cost --------------- " << cost;
-    outfile << "\n  CPU Time ----------- " << CPU_time << " ms";
-    outfile << "\n  Wall clock time ---- " << wall_time << " ms";
+    outfile << "Cost,CPU Time (ms),Wall clock time (ms)\n";
+    outfile << cost << ",";
 }
 
-int Graph::Greedy(int clusters, float alfa) 
+int Graph::Greedy(float alfa) 
 {    
     /*
      * Vector of available vertices
@@ -1522,7 +1518,7 @@ void Graph::printGreedyRandomizedAdaptativeTxt(std::string file_name, std::strin
     outfile << "\n  Wall clock time ---- " << wall_time << " ms";
 }
 
-int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int* seed, int* best_it, int iterations)
+int Graph::GreedyRandomizedAdaptative(float alfa, int* seed, int* best_it, int iterations)
 {
     *seed = time(0);
     init_genrand(*seed);
@@ -1530,7 +1526,7 @@ int Graph::GreedyRandomizedAdaptative(int clusters, float alfa, int* seed, int* 
     int aux;
     for(int i = 0; i < iterations; i++) {
         std::cout << "Iteration " << i + 1 << std::endl;
-        aux = Greedy(clusters, alfa);
+        aux = Greedy(alfa);
         if(aux < best) {
             best = aux;
             *best_it = i;
@@ -1594,7 +1590,7 @@ int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int i
 
     //* Initialize V and N
     for(int i = 0; i < 10; i++) {
-        V[i] = Greedy(clusters, alfas[i]);
+        V[i] = Greedy(alfas[i]);
         N[i] = 1;
     }
 
@@ -1615,7 +1611,7 @@ int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int i
         index_alfa = chooseAlfa(prob_alfas);
         
         // Greedy
-        aux = Greedy(clusters, alfas[index_alfa]);
+        aux = Greedy(alfas[index_alfa]);
         
         // Updating the averages
         V[index_alfa] += aux;
