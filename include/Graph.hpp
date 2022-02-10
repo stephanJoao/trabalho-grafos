@@ -76,8 +76,8 @@ class Graph
         int Greedy(float alfa = 0);
         void printGreedyTxt(int cost);
         
-        int GreedyRandomizedAdaptative(float alfa, int* seed, int* best_it, int iterations);
-        void printGreedyRandomizedAdaptativeTxt(std::string file_name, std::string instance_name, int iterations, float alfa, int seed, int best_cost, int best_it, double CPU_time, double wall_time);
+        int GreedyRandomizedAdaptative(float alfa, int iterations);
+        void printGreedyRATxt(float best_cost, float alfa, int iterations, int best_it, int seed);
         
         int GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int iterations, int stack);
     

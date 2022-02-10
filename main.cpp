@@ -149,28 +149,49 @@ int main(int argc, char const *argv[])
     int cost;
     long double cpu;
     long double wall;
+
+    long double cpu_total;
+    long double wall_total;
+
+    // Header for output
+    ofstream outfile;
+    outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);        
+    outfile << "Best cost,Alfa,Best iteration,Seed,CPU Time (ms),Wall clock time (ms)\n";
+    outfile.close();
     
     // Start
-    std::clock_t c_start = std::clock();
-    auto t_start = std::chrono::high_resolution_clock::now();
+    std::clock_t c_start_total = std::clock();
+    auto t_start_total = std::chrono::high_resolution_clock::now();
 
-    cost = g->Greedy();
+    for(int a = 0; a < 3; a++) {
+        for(int i = 0 ; i < experiments_gra; i++) {
+            std::clock_t c_start = std::clock();
+            auto t_start = std::chrono::high_resolution_clock::now();
+
+            cost = g->GreedyRandomizedAdaptative(alfas_gra[a], iterations_gra);
             
-    std::clock_t c_end = std::clock();
-    auto t_end = std::chrono::high_resolution_clock::now();
+            std::clock_t c_end = std::clock();
+            auto t_end = std::chrono::high_resolution_clock::now();
+                                    
+            cpu = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+            wall = std::chrono::duration<double, std::milli> (t_end - t_start).count();
+            
+            ofstream outfile;
+            outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);
+            outfile << cpu << "," << wall << "\n";
+            outfile.close();
+        }
+    }
+            
+    std::clock_t c_end_total = std::clock();
+    auto t_end_total = std::chrono::high_resolution_clock::now();
     // End
 
-    cpu = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
-    wall = std::chrono::duration<double, std::milli> (t_end - t_start).count();
+    cpu_total = 1000.0 * (c_end_total-c_start_total) / CLOCKS_PER_SEC;
+    wall_total = std::chrono::duration<double, std::milli> (t_end_total - t_start_total).count();
             
     std::cout << "CPU time: " << cpu << " ms\n";
-    std::cout << "Wall clock time: " << wall << " ms\n";
-
-    // Saves data on file
-    g->printGreedyTxt(cost);
-    ofstream outfile;
-    outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);
-    outfile << cpu << "," << wall;
+    std::cout << "Wall clock time: " << wall << " ms\n";   
 
     //* Delete graph
     delete g;

@@ -1250,7 +1250,7 @@ int Graph::OldGreedy(int clusters, float alfa)
     for(int i = 0; i < clusters; i++) {
         cost += solutions[i].higher - solutions[i].lower;
     }
-    std::cout << "Total cost: " << cost << std::endl;
+    // std::cout << "Total cost: " << cost << std::endl;
 
     return cost;
 }
@@ -1502,37 +1502,33 @@ int Graph::Greedy(float alfa)
     return cost;
 }
 
-void Graph::printGreedyRandomizedAdaptativeTxt(std::string file_name, std::string instance_name, int iterations, float alfa, int seed, int best_cost, int best_it, double CPU_time, double wall_time) {
-    std::ofstream outfile;
-    file_name = "./output/greedyRA_results_" + instance_name + ".txt";
-    std::cout << file_name << std::endl;
-    outfile.open(file_name, std::ios::app);
+void Graph::printGreedyRATxt(float best_cost, float alfa, int iterations, int best_it, int seed) {
+    ofstream outfile;
+    outfile.open(outfile_name, std::ios::app);
     
-    outfile << "\n\nInstance: " << instance_name;
-    outfile << "\n  Iterations --------- " << iterations;
-    outfile << "\n  Alfa --------------- " << alfa;
-    outfile << "\n  Seed --------------- " << seed;
-    outfile << "\n  Best cost ---------- " << best_cost;
-    outfile << "\n  Best it ------------ " << best_it;
-    outfile << "\n  CPU Time ----------- " << CPU_time << " ms";
-    outfile << "\n  Wall clock time ---- " << wall_time << " ms";
+    outfile << best_cost << "," << alfa << "," << iterations << "," << best_it << "," << seed << ",";
+    outfile.close();
 }
 
-int Graph::GreedyRandomizedAdaptative(float alfa, int* seed, int* best_it, int iterations)
+int Graph::GreedyRandomizedAdaptative(float alfa, int iterations)
 {
-    *seed = time(0);
-    init_genrand(*seed);
+    int seed = time(0);
+    init_genrand(seed);
     int best = INT_INFINITY;
+    int best_it;
     int aux;
+
     for(int i = 0; i < iterations; i++) {
         std::cout << "Iteration " << i + 1 << std::endl;
         aux = Greedy(alfa);
         if(aux < best) {
             best = aux;
-            *best_it = i;
+            best_it = i;
         }
     }
     std::cout << "Best cost found: " << best << std::endl;
+
+    printGreedyRATxt(best, alfa, iterations, best_it, seed);
 
     return best;
 }
