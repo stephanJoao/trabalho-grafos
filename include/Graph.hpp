@@ -77,9 +77,10 @@ class Graph
         void printGreedyTxt(int cost);
         
         int GreedyRandomizedAdaptative(float alfa, int iterations);
-        void printGreedyRATxt(float best_cost, float alfa, int iterations, int best_it, int seed);
+        void printGreedyRATxt(float best_cost, float alfa, int best_it, int seed);
         
         int GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int iterations, int stack);
+        void printGreedyRARTxt(float best_cost, float best_alfa, int best_it, int seed);
     
 };
 

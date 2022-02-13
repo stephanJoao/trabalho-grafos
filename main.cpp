@@ -156,32 +156,32 @@ int main(int argc, char const *argv[])
     // Header for output
     ofstream outfile;
     outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);        
-    outfile << "Best cost,Alfa,Best iteration,Seed,CPU Time (ms),Wall clock time (ms)\n";
+    outfile << "Best cost,Best alfa,Best iteration,Seed,CPU Time (ms),Wall clock time (ms)\n";
     outfile.close();
     
     // Start
     std::clock_t c_start_total = std::clock();
     auto t_start_total = std::chrono::high_resolution_clock::now();
 
-    for(int a = 0; a < 3; a++) {
-        for(int i = 0 ; i < experiments_gra; i++) {
-            std::clock_t c_start = std::clock();
-            auto t_start = std::chrono::high_resolution_clock::now();
 
-            cost = g->GreedyRandomizedAdaptative(alfas_gra[a], iterations_gra);
-            
-            std::clock_t c_end = std::clock();
-            auto t_end = std::chrono::high_resolution_clock::now();
-                                    
-            cpu = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
-            wall = std::chrono::duration<double, std::milli> (t_end - t_start).count();
-            
-            ofstream outfile;
-            outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);
-            outfile << cpu << "," << wall << "\n";
-            outfile.close();
-        }
+    for(int i = 0 ; i < experiments_grar; i++) {
+        std::clock_t c_start = std::clock();
+        auto t_start = std::chrono::high_resolution_clock::now();
+
+        cost = g->GreedyRandomizedAdaptativeReactive(alfas_grar, 10, iterations_grar, 40);
+        
+        std::clock_t c_end = std::clock();
+        auto t_end = std::chrono::high_resolution_clock::now();
+                                
+        cpu = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+        wall = std::chrono::duration<double, std::milli> (t_end - t_start).count();
+        
+        ofstream outfile;
+        outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);
+        outfile << cpu << "," << wall << "\n";
+        outfile.close();
     }
+    
             
     std::clock_t c_end_total = std::clock();
     auto t_end_total = std::chrono::high_resolution_clock::now();

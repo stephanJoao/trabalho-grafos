@@ -1502,11 +1502,11 @@ int Graph::Greedy(float alfa)
     return cost;
 }
 
-void Graph::printGreedyRATxt(float best_cost, float alfa, int iterations, int best_it, int seed) {
+void Graph::printGreedyRATxt(float best_cost, float alfa, int best_it, int seed) {
     ofstream outfile;
     outfile.open(outfile_name, std::ios::app);
     
-    outfile << best_cost << "," << alfa << "," << iterations << "," << best_it << "," << seed << ",";
+    outfile << best_cost << "," << alfa << "," << best_it << "," << seed << ",";
     outfile.close();
 }
 
@@ -1528,7 +1528,7 @@ int Graph::GreedyRandomizedAdaptative(float alfa, int iterations)
     }
     std::cout << "Best cost found: " << best << std::endl;
 
-    printGreedyRATxt(best, alfa, iterations, best_it, seed);
+    printGreedyRATxt(best, alfa, best_it, seed);
 
     return best;
 }
@@ -1563,21 +1563,34 @@ void updateProbabilities(unsigned long int V[], unsigned short int N[], float pr
     }    
 }
 
+void Graph::printGreedyRARTxt(float best_cost, float best_alfa, int best_it, int seed) {
+    ofstream outfile;
+    outfile.open(outfile_name, std::ios::app);
+    
+    outfile << best_cost << "," << best_alfa << "," << best_it << "," << seed << ",";
+    outfile.close();
+}
+
 int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int iterations, int stack)
 {    
     //* Initialize seed
     int seed = time(0);
     init_genrand(seed);
 
-    //* Alfa array and probabilities
-    float prob_alfas[10] = {0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10};
     
     //* Delta
     int delta = 10;
 
-    //* V/N = average of solutions
-    unsigned long int V[10]  = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    unsigned short int N[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    //* Probabilities and average (V/N)
+    float* prob_alfas = new float [tam_alfa];
+    unsigned long int* V = new unsigned long int [tam_alfa];
+    unsigned short int* N = new unsigned short int [tam_alfa];
+
+    for(int i = 0; i < tam_alfa; i++) {
+        prob_alfas[i] = 1.0 / tam_alfa;
+        V[i] = 0;
+        N[i] = 0;
+    }
     
     //* Variables to register best case
     int best        = INT_INFINITY;
@@ -1585,7 +1598,7 @@ int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int i
     float best_alfa = 0;
 
     //* Initialize V and N
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < tam_alfa; i++) {
         V[i] = Greedy(alfas[i]);
         N[i] = 1;
     }
@@ -1620,6 +1633,7 @@ int Graph::GreedyRandomizedAdaptativeReactive(float alfas[], int tam_alfa, int i
             best_alfa = alfas[index_alfa];
         }
     }
+    printGreedyRARTxt(best, best_alfa, best_it, seed);
     std::cout << "Best cost found: " << best << std::endl;
 
     return best;
