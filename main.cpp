@@ -139,7 +139,7 @@ int main(int argc, char const *argv[])
     const int experiments_gra  = 30;
 
     //* Greedy randomized adaptative reactive
-    float alfas_grar[10]       = {0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50};
+    float alfas_grar[10]       = {0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10};
     const int iterations_grar  = 4000;
     const int experiments_grar = 30;
 
@@ -164,7 +164,7 @@ int main(int argc, char const *argv[])
     auto t_start_total = std::chrono::high_resolution_clock::now();
 
 
-    for(int i = 0 ; i < experiments_grar; i++) {
+    for(int i = 0 ; i < 1; i++) {
         std::clock_t c_start = std::clock();
         auto t_start = std::chrono::high_resolution_clock::now();
 
