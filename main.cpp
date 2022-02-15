@@ -139,7 +139,9 @@ int main(int argc, char const *argv[])
     const int experiments_gra  = 30;
 
     //* Greedy randomized adaptative reactive
-    float alfas_grar[10]       = {0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10};
+    float alfas_grar[10]       = {0.050, 0.100, 0.150, 0.200, 0.250, 0.300, 0.350, 0.400, 0.450, 0.500};
+    // float alfas_grar[10]       = {0.010, 0.020, 0.030, 0.040, 0.050, 0.060, 0.070, 0.080, 0.009, 0.010};
+    // float alfas_grar[10]       = {0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.010};
     const int iterations_grar  = 4000;
     const int experiments_grar = 30;
 
@@ -153,6 +155,71 @@ int main(int argc, char const *argv[])
     long double cpu_total;
     long double wall_total;
 
+    //* Greedy
+    // // Start
+    // std::clock_t c_start = std::clock();
+    // auto t_start = std::chrono::high_resolution_clock::now();
+
+    // cost = g->Greedy();
+            
+    // std::clock_t c_end = std::clock();
+    // auto t_end = std::chrono::high_resolution_clock::now();
+    // // End
+
+    // cpu = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+    // wall = std::chrono::duration<double, std::milli> (t_end - t_start).count();
+            
+    // std::cout << "CPU time: " << cpu << " ms\n";
+    // std::cout << "Wall clock time: " << wall << " ms\n";
+
+    // // Saves data on file
+    // g->printGreedyTxt(cost);
+    // ofstream outfile;
+    // outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);
+    // outfile << cpu << "," << wall;
+
+    //* Greedy Randomized Adaptative
+    // // Header for output
+    // ofstream outfile;
+    // outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);        
+    // outfile << "Best cost,Alfa,Best iteration,Seed,CPU Time (ms),Wall clock time (ms)\n";
+    // outfile.close();
+    
+    // // Start
+    // std::clock_t c_start_total = std::clock();
+    // auto t_start_total = std::chrono::high_resolution_clock::now();
+
+    // for(int a = 0; a < exmperiments_gra; a++) {
+    //     for(int i = 0 ; i < experiments_gra; i++) {
+    //         std::clock_t c_start = std::clock();
+    //         auto t_start = std::chrono::high_resolution_clock::now();
+
+    //         cost = g->GreedyRandomizedAdaptative(alfas_gra[a], iterations_gra);
+            
+    //         std::clock_t c_end = std::clock();
+    //         auto t_end = std::chrono::high_resolution_clock::now();
+                                    
+    //         cpu = 1000.0 * (c_end-c_start) / CLOCKS_PER_SEC;
+    //         wall = std::chrono::duration<double, std::milli> (t_end - t_start).count();
+            
+    //         ofstream outfile;
+    //         outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);
+    //         outfile << cpu << "," << wall << "\n";
+    //         outfile.close();
+    //     }
+    // }
+            
+    // std::clock_t c_end_total = std::clock();
+    // auto t_end_total = std::chrono::high_resolution_clock::now();
+    // // End
+
+    // cpu_total = 1000.0 * (c_end_total-c_start_total) / CLOCKS_PER_SEC;
+    // wall_total = std::chrono::duration<double, std::milli> (t_end_total - t_start_total).count();
+            
+    // std::cout << "CPU time: " << cpu << " ms\n";
+    // std::cout << "Wall clock time: " << wall << " ms\n"; 
+
+    //* Greedy Randomized Adaptative Reactive
     // Header for output
     ofstream outfile;
     outfile.open("output/" + output_file_name + "_" + instance_name, std::ios::app);        
@@ -164,7 +231,7 @@ int main(int argc, char const *argv[])
     auto t_start_total = std::chrono::high_resolution_clock::now();
 
 
-    for(int i = 0 ; i < 1; i++) {
+    for(int i = 0 ; i < experiments_grar; i++) {
         std::clock_t c_start = std::clock();
         auto t_start = std::chrono::high_resolution_clock::now();
 
